@@ -22,7 +22,7 @@ const LISTING_RATE_LIMIT_MAX = 3;
 export type GetFilteredItemsResult = { items: Item[]; hasMore: boolean };
 
 /**
- * Busca itens no servidor com filtro por nome (ilike) e categoria, com paginação.
+ * Busca itens no servidor com filtro por nome (Full Text Search em name_tsv, migração 00021) e categoria, com paginação.
  * Debounce no frontend (300ms) antes de chamar reduz chamadas ao pesquisar.
  */
 export async function getFilteredItems(
@@ -42,7 +42,7 @@ export async function getFilteredItems(
 
   const searchTrim = search?.trim().slice(0, SEARCH_MAX_LENGTH);
   if (searchTrim) {
-    // Full Text Search (migração 00021) para melhor performance com muitos itens
+    // Full Text Search na coluna name_tsv (migração 00021). Requer que a migração esteja aplicada.
     query = query.textSearch("name_tsv", searchTrim, {
       type: "plain",
       config: "portuguese",
