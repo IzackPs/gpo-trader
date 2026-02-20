@@ -20,6 +20,7 @@ export interface Profile {
   account_age_days: number;
   strikes: number;
   is_admin?: boolean;
+  last_seen_at?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -95,3 +96,6 @@ export const TIER_LIMITS: Record<RankTier, { maxListings: number }> = {
 
 /** Idade mínima da conta Discord (dias) para criar ofertas. Anti-Sybil (TDD). */
 export const MIN_ACCOUNT_AGE_DAYS = 30;
+
+/** Máximo de strikes antes de bloquear criação de ofertas. Política de moderação. */
+export const MAX_STRIKES_BEFORE_BLOCK = 3;

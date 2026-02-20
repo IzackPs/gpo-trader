@@ -6,6 +6,14 @@ import { RankBadge } from "@/components/ui/rank-badge";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import type { Listing, RankTier } from "@/types";
 
+function isUserOnline(lastSeenAt?: string | null): boolean {
+  if (!lastSeenAt) return false;
+  const lastSeen = new Date(lastSeenAt);
+  const now = new Date();
+  const minutesAgo = (now.getTime() - lastSeen.getTime()) / (1000 * 60);
+  return minutesAgo < 5; // Online se ativo nos últimos 5 minutos
+}
+
 interface ListingCardProps {
   listing: Listing;
 }
@@ -26,7 +34,16 @@ export function ListingCard({ listing }: ListingCardProps) {
 
       <CardContent className="p-5 pt-8">
         <div className="flex items-center gap-3 mb-4">
-          <Avatar src={profile?.avatar_url ?? undefined} alt="" />
+          <div className="relative">
+            <Avatar src={profile?.avatar_url ?? undefined} alt="" />
+            {profile?.last_seen_at && isUserOnline(profile.last_seen_at) && (
+              <span
+                className="absolute bottom-0 right-0 size-3 rounded-full border-2 border-slate-950 bg-emerald-500"
+                aria-label="Online"
+                title="Online"
+              />
+            )}
+          </div>
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <p className="truncate text-sm font-semibold text-slate-50">
@@ -34,6 +51,9 @@ export function ListingCard({ listing }: ListingCardProps) {
               </p>
               {profile?.rank_tier && (
                 <RankBadge tier={profile.rank_tier as RankTier} showLabel={false} />
+              )}
+              {profile?.last_seen_at && isUserOnline(profile.last_seen_at) && (
+                <span className="text-xs text-emerald-400 font-medium">Online</span>
               )}
             </div>
             <p className="text-xs text-slate-400">

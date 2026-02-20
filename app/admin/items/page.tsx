@@ -14,7 +14,7 @@ export const metadata = {
 export default async function AdminItemsPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/");
+  if (!user) redirect("/auth");
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -22,7 +22,7 @@ export default async function AdminItemsPage() {
     .eq("id", user.id)
     .single();
 
-  if (!profile?.is_admin) redirect("/");
+  if (!profile?.is_admin) redirect("/forbidden");
 
   const { data: items } = await supabase
     .from("items")

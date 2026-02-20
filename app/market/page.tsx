@@ -6,6 +6,7 @@ import { SectionHeader } from "@/components/layout/section-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ListingCard } from "@/components/market/listing-card";
+import { MarketClient } from "./market-client";
 import type { Listing } from "@/types";
 
 export default async function MarketPage() {
@@ -15,7 +16,7 @@ export default async function MarketPage() {
     .from("listings")
     .select(`
       *,
-      profiles (username, avatar_url, reputation_score, rank_tier)
+      profiles (username, avatar_url, reputation_score, rank_tier, last_seen_at)
     `)
     .eq("status", "OPEN")
     .order("created_at", { ascending: false });
@@ -74,6 +75,7 @@ export default async function MarketPage() {
           )}
         </div>
       </PageContainer>
+      <MarketClient />
     </main>
   );
 }

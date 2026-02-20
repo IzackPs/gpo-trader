@@ -54,48 +54,23 @@ export default async function ListingDetailPage({ params }: Props) {
     redirect("/market");
   }
 
-// AÇÃO: Aceitar Oferta (O "Handshake")
+// AÇÃO: Aceitar Oferta (atômica via RPC — evita race e listing órfã)
   async function acceptOffer() {
     "use server";
-    
     const sb = await createClient();
-    
-    // 1. Verificar quem é o usuário atual (Comprador)
     const { data: { user } } = await sb.auth.getUser();
-    if (!user) return redirect("/");
+    if (!user) return redirect("/auth");
 
-    // 2. Travar a Oferta (Mudar status para LOCKED)
-    // Isso evita que duas pessoas aceitem ao mesmo tempo
-    const { error: updateError } = await sb
-      .from("listings")
-      .update({ status: "LOCKED" })
-      .eq("id", id)
-      .eq("status", "OPEN"); // Trava de segurança extra
+    const { data: transactionId, error } = await sb.rpc("accept_listing_offer", {
+      p_listing_id: id,
+      p_buyer_id: user.id,
+    });
 
-    if (updateError) {
-      console.error("Erro ao travar oferta:", updateError);
-      return; // Talvez alguém já tenha aceitado antes
-    }
-
-    // 3. Criar a Transação (com listing_id para auditoria)
-    const { data: transaction, error: insertError } = await sb
-      .from("transactions")
-      .insert({
-        listing_id: id,
-        buyer_id: user.id,
-        seller_id: listing.user_id,
-      })
-      .select()
-      .single();
-
-    if (insertError) {
-      console.error("Erro ao criar transação:", insertError);
-      // Opcional: Reverter o status da listing para OPEN se falhar aqui
+    if (error) {
+      console.error("Erro ao aceitar oferta:", error.message);
       return;
     }
-
-    // 4. Redirecionar para a "Sala de Troca"
-    redirect(`/trades/${transaction.id}`);
+    redirect(`/trades/${transactionId}`);
   }
 
   return (
@@ -103,7 +78,7 @@ export default async function ListingDetailPage({ params }: Props) {
       <PageContainer maxWidth="md" className="space-y-8">
       <Link
         href="/market"
-        className="inline-flex items-center gap-2 text-sm text-slate-400 transition-colors hover:text-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 rounded"
+        className="inline-flex items-center gap-2 text-sm text-slate-400 transition-colors hover:text-slate-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-500 rounded"
       >
         <ArrowLeft size={18} aria-hidden /> Voltar ao mercado
       </Link>
