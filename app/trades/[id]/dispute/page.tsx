@@ -6,7 +6,7 @@ import { PageContainer } from "@/components/layout/page-container";
 import { Card, CardContent } from "@/components/ui/card";
 import { DisputeEvidenceForm } from "./dispute-evidence-form";
 
-type Props = { params: Promise<{ id: string } }>;
+type Props = { params: Promise<{ id: string }> };
 
 export default async function TradeDisputePage({ params }: Props) {
   const { id: transactionId } = await params;

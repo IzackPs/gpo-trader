@@ -2,9 +2,9 @@
 
 import { createClient } from "@/utils/supabase/client";
 import type { User } from "@supabase/supabase-js";
-import { LogIn, LayoutDashboard, PlusCircle, LogOut, Shield } from "lucide-react";
+import { LogIn, LayoutDashboard, PlusCircle, LogOut, Shield, ShieldCheck, Package, Scale } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,6 +17,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 interface Profile {
   reputation_score: number;
+  is_admin?: boolean;
 }
 
 export default function Navbar() {
@@ -25,32 +26,42 @@ export default function Navbar() {
   const [loading, setLoading] = useState(true);
   const supabase = createClient();
 
-  const fetchUserAndProfile = useCallback(async () => {
-    const { data: { user: u } } = await supabase.auth.getUser();
-    setUser(u ?? null);
-    if (u) {
-      const { data: p } = await supabase
-        .from("profiles")
-        .select("reputation_score")
-        .eq("id", u.id)
-        .single();
-      setProfile((p as Profile) ?? null);
-    } else {
-      setProfile(null);
-    }
-    setLoading(false);
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      const { data: { user: u } } = await supabase.auth.getUser();
+      if (!mounted) return;
+      setUser(u ?? null);
+      if (u) {
+        const { data: p } = await supabase
+          .from("profiles")
+          .select("reputation_score, is_admin")
+          .eq("id", u.id)
+          .single();
+        setProfile((p as Profile) ?? null);
+      } else {
+        setProfile(null);
+      }
+      setLoading(false);
+    })();
+    return () => { mounted = false; };
   }, [supabase]);
 
   useEffect(() => {
-    fetchUserAndProfile();
-  }, [fetchUserAndProfile]);
-
-  useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
-      fetchUserAndProfile();
+      void supabase.auth.getUser().then(({ data: { user: u } }) => {
+        setUser(u ?? null);
+        if (u) {
+          void supabase.from("profiles").select("reputation_score, is_admin").eq("id", u.id).single().then(({ data: p }) => {
+            setProfile((p as Profile) ?? null);
+          });
+        } else {
+          setProfile(null);
+        }
+      });
     });
     return () => subscription.unsubscribe();
-  }, [supabase.auth, fetchUserAndProfile]);
+  }, [supabase]);
 
   const handleLogin = () => {
     supabase.auth.signInWithOAuth({
@@ -88,6 +99,25 @@ export default function Navbar() {
             <NavbarSkeleton />
           ) : user ? (
             <>
+              {profile?.is_admin === true && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger
+                    className="flex shrink-0 items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm font-medium text-amber-400 transition-colors hover:bg-amber-500/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-500"
+                    aria-label="Menu Admin"
+                  >
+                    <ShieldCheck size={18} aria-hidden />
+                    <span className="hidden sm:inline">Admin</span>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="min-w-44">
+                    <DropdownMenuItem href="/admin/items" icon={<Package size={16} className="shrink-0" />}>
+                      Preços dos itens
+                    </DropdownMenuItem>
+                    <DropdownMenuItem href="/admin/disputes" icon={<Scale size={16} className="shrink-0" />}>
+                      Disputas
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
               <span
                 className="hidden shrink-0 items-center gap-1.5 rounded-full border border-white/10 bg-slate-800/60 px-2.5 py-1 text-xs font-semibold text-cyan-300 sm:flex"
                 title="Reputação"

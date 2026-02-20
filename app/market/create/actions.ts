@@ -10,9 +10,12 @@ const CATEGORIES: ItemCategory[] = [
   "ACCESSORY",
 ];
 
+/** Limite máximo de itens por busca (evita sobrecarga com catálogo grande). */
+const ITEMS_QUERY_LIMIT = 200;
+
 /**
  * Busca itens no servidor com filtro por nome (ilike) e categoria.
- * Evita carregar milhares de itens no client; o banco faz a pesquisa.
+ * Limitado a ITEMS_QUERY_LIMIT para escalabilidade.
  */
 export async function getFilteredItems(
   search?: string,
@@ -25,7 +28,8 @@ export async function getFilteredItems(
     .select("*")
     .eq("is_active", true)
     .order("category", { ascending: true })
-    .order("name", { ascending: true });
+    .order("name", { ascending: true })
+    .limit(ITEMS_QUERY_LIMIT);
 
   const searchTrim = search?.trim();
   if (searchTrim) {

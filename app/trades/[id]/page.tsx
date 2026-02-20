@@ -52,7 +52,6 @@ export default async function TradeRoomPage({
   const sellerAgreed = Boolean(transaction.seller_agreed_items);
   const itemsAgreed = buyerAgreed && sellerAgreed;
   const myAgreed = isBuyer ? buyerAgreed : sellerAgreed;
-  const otherAgreed = isBuyer ? sellerAgreed : buyerAgreed;
 
   async function agreeItems() {
     "use server";

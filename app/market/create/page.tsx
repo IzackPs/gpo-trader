@@ -26,7 +26,8 @@ export default async function CreateListingPage() {
       .select("*")
       .eq("is_active", true)
       .order("category", { ascending: true })
-      .order("name", { ascending: true }),
+      .order("name", { ascending: true })
+      .limit(200),
     supabase
       .from("profiles")
       .select("rank_tier, account_age_days, strikes")

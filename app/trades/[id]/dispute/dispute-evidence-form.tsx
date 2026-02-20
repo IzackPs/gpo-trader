@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { createClient } from "@/utils/supabase/client";
-import { Button } from "@/components/ui/button";
 import { Alert } from "@/components/ui/alert";
 
 const BUCKET = "dispute-evidence";

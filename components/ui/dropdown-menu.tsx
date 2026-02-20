@@ -8,6 +8,7 @@ interface DropdownMenuContextValue {
   open: boolean;
   setOpen: (v: boolean) => void;
   triggerRef: React.RefObject<HTMLButtonElement | null>;
+  setTriggerEl: (el: HTMLButtonElement | null) => void;
 }
 
 const DropdownMenuContext = React.createContext<DropdownMenuContextValue | null>(null);
@@ -26,7 +27,10 @@ export interface DropdownMenuProps {
 
 export function DropdownMenu({ children, open: controlledOpen, onOpenChange }: DropdownMenuProps) {
   const [internalOpen, setInternalOpen] = React.useState(false);
-  const triggerRef = React.useRef<HTMLButtonElement>(null);
+  const triggerRef = React.useRef<HTMLButtonElement | null>(null);
+  const setTriggerEl = React.useCallback((el: HTMLButtonElement | null) => {
+    triggerRef.current = el;
+  }, []);
   const open = controlledOpen ?? internalOpen;
   const setOpen = React.useCallback(
     (v: boolean) => {
@@ -36,7 +40,7 @@ export function DropdownMenu({ children, open: controlledOpen, onOpenChange }: D
     [onOpenChange, controlledOpen]
   );
   return (
-    <DropdownMenuContext.Provider value={{ open, setOpen, triggerRef }}>
+    <DropdownMenuContext.Provider value={{ open, setOpen, triggerRef, setTriggerEl }}>
       <div className="relative inline-block text-left">{children}</div>
     </DropdownMenuContext.Provider>
   );
@@ -47,14 +51,14 @@ export interface DropdownMenuTriggerProps extends React.ButtonHTMLAttributes<HTM
 }
 
 export const DropdownMenuTrigger = React.forwardRef<HTMLButtonElement, DropdownMenuTriggerProps>(
-  ({ className, children, asChild, onClick, ...props }, ref) => {
-    const { open, setOpen, triggerRef } = useDropdown();
+  ({ className, children, onClick, ...props }, ref) => {
+    const { open, setOpen, setTriggerEl } = useDropdown();
     const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
       onClick?.(e);
       setOpen(!open);
     };
     const setRefs = (el: HTMLButtonElement | null) => {
-      (triggerRef as React.MutableRefObject<HTMLButtonElement | null>).current = el;
+      setTriggerEl(el);
       if (typeof ref === "function") ref(el);
       else if (ref) (ref as React.MutableRefObject<HTMLButtonElement | null>).current = el;
     };

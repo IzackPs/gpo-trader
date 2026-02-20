@@ -172,6 +172,7 @@ Não há botão “apagar” item: apenas “Ativo” Sim/Não. Isto evita quebr
 | Abrir disputa | Sala de troca → Disputa | Upload de evidências; estado DISPUTED |
 | Ver perfil e reputação | Dashboard | Protegido |
 | Editar preços / ativar ou desativar itens | Admin – Itens | Apenas admins |
+| Listar e resolver disputas (status, notas) | Admin – Disputas | Apenas admins (mediador) |
 
 ---
 

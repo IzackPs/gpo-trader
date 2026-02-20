@@ -105,6 +105,7 @@ As migrações devem ser executadas **por ordem numérica**. No Supabase: **SQL 
 | 15 | `00015_orderbook_disputes_chat_agreement.sql` | Disputas, acordo de itens, chat na troca |
 | 16 | `00016_presence_rpc_and_pagination_fix.sql` | RPC de presença e correções de paginação |
 | 17 | `00017_soft_deletes_isr_analytics.sql` | `is_active` em items (soft delete), validação de itens ativos, `get_market_prices_last_week()` |
+| 18 | `00018_listing_items_wap_admin_disputes.sql` | WAP usa `listing_items` (não JSONB); políticas RLS para admin ver/atualizar disputas |
 
 **Seed (opcional):** Executar `supabase/seed.sql` no SQL Editor para popular a tabela `items` com dados iniciais.
 
@@ -197,7 +198,12 @@ gpo-trader/
 
 - **`/market/analytics`**: Chama RPC `get_market_prices_last_week()`. Preço médio ponderado (WAP) por item na última semana (transações CONFIRMED). Usa `createClientPublic()` e `revalidate = 60`.
 
-### 6.8 Soft deletes (itens)
+### 6.8 Admin – Disputas (resolução)
+
+- **`/admin/disputes`:** Lista todas as disputas (data, reportado por, status, motivo). Apenas admins (policy RLS em 00018).
+- **`/admin/disputes/[id]`:** Detalhe da disputa, evidências, transação e formulário para atualizar **status** (OPEN, UNDER_REVIEW, RESOLVED, CLOSED) e **notas admin**. O mediador guarda e o fluxo fica concluído.
+
+### 6.9 Soft deletes (itens)
 
 - Coluna `items.is_active` (default true). No admin, desativar em vez de apagar. No frontend (criar oferta, listagens), filtrar `is_active = true`. A função `validate_listing_creation` já exige itens ativos.
 
@@ -251,6 +257,7 @@ Para não depender apenas de execução manual, agende no Supabase (Database →
 - **Disputas e Storage:** `docs/DISPUTES_AND_STORAGE.md`
 - **Auditoria de arquitetura:** `docs/ARCHITECTURE_AUDIT.md`
 - **Consenso de preço (cron/edge):** `docs/EDGE_FUNCTION_PRICE_CONSENSUS.md`
+- **Decisão listing_items vs JSONB e matchmaking:** `docs/DECISAO_LISTING_ITEMS.md`
 
 ---
 

@@ -36,7 +36,7 @@ export default async function ListingDetailPage({ params }: Props) {
   // 4. Buscar detalhes dos itens
   // O listing.items é um JSON, precisamos garantir que é um array
   const itemsArray = Array.isArray(listing.items) ? listing.items : [];
-  const itemIds = itemsArray.map((i: any) => i.item_id);
+  const itemIds = itemsArray.map((i: { item_id: number }) => i.item_id);
   
   // Se não tiver itens (erro de dado antigo), evita crash
   const { data: itemsDetails } = itemIds.length > 0 
