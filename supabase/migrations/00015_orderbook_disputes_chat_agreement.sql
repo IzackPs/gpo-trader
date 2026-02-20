@@ -156,15 +156,18 @@ CREATE POLICY "dispute_cases_select_participants"
   USING (
     reported_by = auth.uid()
     OR transaction_id IN (
-      SELECT id FROM transactions WHERE buyer_id = auth.uid() OR seller_id = auth.uid()
+      SELECT t.id FROM public.transactions t WHERE t.buyer_id = auth.uid() OR t.seller_id = auth.uid()
     )
   );
 
 CREATE POLICY "dispute_evidence_select_dispute"
   ON public.dispute_evidence FOR SELECT
   USING (
-    dispute_id IN (SELECT id FROM dispute_cases WHERE dispute_cases.reported_by = auth.uid()
-      OR transaction_id IN (SELECT id FROM transactions WHERE buyer_id = auth.uid() OR seller_id = auth.uid()))
+    dispute_id IN (
+      SELECT dc.id FROM public.dispute_cases dc
+      WHERE dc.reported_by = auth.uid()
+         OR dc.transaction_id IN (SELECT t.id FROM public.transactions t WHERE t.buyer_id = auth.uid() OR t.seller_id = auth.uid())
+    )
   );
 
 CREATE POLICY "dispute_evidence_insert_participant"
@@ -172,8 +175,8 @@ CREATE POLICY "dispute_evidence_insert_participant"
   WITH CHECK (
     uploaded_by = auth.uid()
     AND dispute_id IN (
-      SELECT id FROM dispute_cases dc
-      JOIN transactions t ON t.id = dc.transaction_id
+      SELECT dc.id FROM public.dispute_cases dc
+      JOIN public.transactions t ON t.id = dc.transaction_id
       WHERE t.buyer_id = auth.uid() OR t.seller_id = auth.uid()
     )
   );
