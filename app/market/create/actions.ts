@@ -12,6 +12,8 @@ const CATEGORIES: ItemCategory[] = [
 
 /** Limite máximo de itens por busca (evita sobrecarga com catálogo grande). */
 const ITEMS_QUERY_LIMIT = 200;
+/** Comprimento máximo do termo de busca (evita abuso e queries pesadas). */
+const SEARCH_MAX_LENGTH = 150;
 
 /**
  * Busca itens no servidor com filtro por nome (ilike) e categoria.
@@ -31,7 +33,7 @@ export async function getFilteredItems(
     .order("name", { ascending: true })
     .limit(ITEMS_QUERY_LIMIT);
 
-  const searchTrim = search?.trim();
+  const searchTrim = search?.trim().slice(0, SEARCH_MAX_LENGTH);
   if (searchTrim) {
     query = query.ilike("name", `%${searchTrim}%`);
   }

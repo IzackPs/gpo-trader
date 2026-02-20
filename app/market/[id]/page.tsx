@@ -25,7 +25,10 @@ export default async function ListingDetailPage({ params }: Props) {
   // 3. Buscar a Oferta pelo ID (agora usando a variável 'id' correta)
   const { data: listing, error } = await supabase
     .from("listings")
-    .select(`*, profiles (*)`)
+    .select(`
+      *,
+      profiles (username, avatar_url, reputation_score, rank_tier)
+    `)
     .eq("id", id)
     .single();
 

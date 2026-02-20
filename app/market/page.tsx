@@ -22,7 +22,8 @@ export default async function MarketPage() {
       profiles (username, avatar_url, reputation_score, rank_tier, last_seen_at)
     `)
     .eq("status", "OPEN")
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .limit(60);
 
   if (error) {
     console.error("Erro Supabase:", error);

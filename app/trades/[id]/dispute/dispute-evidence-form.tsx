@@ -23,14 +23,20 @@ export function DisputeEvidenceForm({ disputeId }: { disputeId: string }) {
       return;
     }
 
-    const allowed = ["image/jpeg", "image/png", "image/webp", "image/gif", "application/pdf"];
-    if (!allowed.includes(file.type)) {
+    const allowed: Record<string, string> = {
+      "image/jpeg": "jpg",
+      "image/png": "png",
+      "image/webp": "webp",
+      "image/gif": "gif",
+      "application/pdf": "pdf",
+    };
+    const ext = allowed[file.type];
+    if (!ext) {
       setError("Use imagem (JPEG, PNG, WebP, GIF) ou PDF.");
       return;
     }
 
     setUploading(true);
-    const ext = file.name.split(".").pop() ?? "bin";
     const path = `${disputeId}/${crypto.randomUUID()}.${ext}`;
 
     const { error: uploadErr } = await supabase.storage
@@ -45,11 +51,18 @@ export function DisputeEvidenceForm({ disputeId }: { disputeId: string }) {
 
     const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(path);
 
+    const safeFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 200) || "file";
+    const { data: { user: authUser } } = await supabase.auth.getUser();
+    if (!authUser) {
+      setError("Sessão expirada. Faça login novamente.");
+      setUploading(false);
+      return;
+    }
     const { error: insertErr } = await supabase.from("dispute_evidence").insert({
       dispute_id: disputeId,
-      uploaded_by: (await supabase.auth.getUser()).data.user?.id,
+      uploaded_by: authUser.id,
       file_url: urlData.publicUrl,
-      file_name: file.name,
+      file_name: safeFileName,
     });
 
     if (insertErr) {

@@ -2,16 +2,28 @@ import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
+function getSupabaseEnv() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  if (!url || !key) {
+    throw new Error(
+      'Variáveis de ambiente Supabase em falta. Defina NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY em .env.local'
+    )
+  }
+  return { url, key }
+}
+
 /**
  * Cliente com sessão (cookies). Usar em rotas que dependem do utilizador (auth, criar oferta, etc.).
  * Nota: chamar cookies() torna a rota dinâmica e desativa ISR.
  */
 export async function createClient() {
+  const { url, key } = getSupabaseEnv()
   const cookieStore = await cookies()
 
   return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    url,
+    key,
     {
       cookies: {
         get(name: string) {
@@ -42,8 +54,6 @@ export async function createClient() {
  * e revalidar a cada revalidate segundos sem tornar a rota dinâmica.
  */
 export function createClientPublic() {
-  return createSupabaseClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  const { url, key } = getSupabaseEnv()
+  return createSupabaseClient(url, key)
 }

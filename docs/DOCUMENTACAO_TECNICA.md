@@ -258,6 +258,7 @@ Para não depender apenas de execução manual, agende no Supabase (Database →
 - **Auditoria de arquitetura:** `docs/ARCHITECTURE_AUDIT.md`
 - **Consenso de preço (cron/edge):** `docs/EDGE_FUNCTION_PRICE_CONSENSUS.md`
 - **Decisão listing_items vs JSONB e matchmaking:** `docs/DECISAO_LISTING_ITEMS.md`
+- **Validação (arquitetura, segurança, escalabilidade):** `docs/VALIDACAO_PROJETO.md`
 
 ---
 
