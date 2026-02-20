@@ -1,34 +1,43 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { MatchNotifications } from "@/components/market/match-notifications";
 
+const PRESENCE_MIN_INTERVAL_MS = 2 * 60 * 1000; // Só envia heartbeat se passou 2 min desde o último
+const RPC_MAX_AGE_MINUTES = 5; // RPC só faz UPDATE se last_seen_at for mais antigo que 5 min
+
 export function MarketClient() {
   const supabase = createClient();
+  const lastPresenceAt = useRef<number>(0);
 
   useEffect(() => {
-    // Atualizar presença do usuário quando a página carrega
-    async function updatePresence() {
+    async function updatePresenceIfStale() {
+      const now = Date.now();
+      if (now - lastPresenceAt.current < PRESENCE_MIN_INTERVAL_MS) return;
+
       const {
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) return;
 
-      // Chamar função RPC para atualizar last_seen_at
-      // Alternativamente, podemos fazer um UPDATE direto se RLS permitir
-      await supabase
-        .from("profiles")
-        .update({ last_seen_at: new Date().toISOString() })
-        .eq("id", user.id);
+      lastPresenceAt.current = now;
+      await supabase.rpc("update_presence_if_stale", {
+        p_user_id: user.id,
+        p_max_age_minutes: RPC_MAX_AGE_MINUTES,
+      });
     }
 
-    updatePresence();
+    updatePresenceIfStale();
 
-    // Atualizar presença a cada 2 minutos enquanto a página está aberta
-    const interval = setInterval(updatePresence, 2 * 60 * 1000);
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        updatePresenceIfStale();
+      }
+    };
 
-    return () => clearInterval(interval);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
   }, []);
 
   return <MatchNotifications />;

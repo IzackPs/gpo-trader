@@ -9,6 +9,7 @@ import { RankBadge } from "@/components/ui/rank-badge";
 import type { RankTier } from "@/types";
 
 const ORDER_BOOK_PAGE_SIZE = 50;
+const FETCH_SIZE = ORDER_BOOK_PAGE_SIZE + 1; // Pedir 51: se vier 51, há próxima página (evita off-by-one)
 
 type Row = {
   item_id: number;
@@ -51,20 +52,22 @@ export default async function OrderBookItemPage({
       .eq("item_id", itemId)
       .eq("side", "HAVE")
       .order("created_at", { ascending: false })
-      .limit(ORDER_BOOK_PAGE_SIZE),
+      .limit(FETCH_SIZE),
     supabase
       .from("order_book_by_item")
       .select("*")
       .eq("item_id", itemId)
       .eq("side", "WANT")
       .order("created_at", { ascending: false })
-      .limit(ORDER_BOOK_PAGE_SIZE),
+      .limit(FETCH_SIZE),
   ]);
 
-  const asks = (asksRes.data ?? []) as Row[];
-  const bids = (bidsRes.data ?? []) as Row[];
-  const hasMoreAsks = asks.length === ORDER_BOOK_PAGE_SIZE;
-  const hasMoreBids = bids.length === ORDER_BOOK_PAGE_SIZE;
+  const rawAsks = (asksRes.data ?? []) as Row[];
+  const rawBids = (bidsRes.data ?? []) as Row[];
+  const hasMoreAsks = rawAsks.length > ORDER_BOOK_PAGE_SIZE;
+  const hasMoreBids = rawBids.length > ORDER_BOOK_PAGE_SIZE;
+  const asks = hasMoreAsks ? rawAsks.slice(0, ORDER_BOOK_PAGE_SIZE) : rawAsks;
+  const bids = hasMoreBids ? rawBids.slice(0, ORDER_BOOK_PAGE_SIZE) : rawBids;
 
   return (
     <main>

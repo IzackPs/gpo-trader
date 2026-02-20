@@ -95,6 +95,8 @@ SELECT * FROM public.find_matches();
 SELECT public.is_user_online('uuid-do-usuario');
 ```
 
+**Escalabilidade:** O frontend usa `update_presence_if_stale` (RPC que só faz UPDATE se `last_seen_at` for mais antigo que 5 min) e **Page Visibility API** (atualiza ao voltar para a aba), sem polling cego. Para escala muito maior, migre para **Supabase Realtime Presence** (canal em memória, zero writes no Postgres).
+
 ---
 
 ### ✅ 5. Sistema de Contrapropostas
