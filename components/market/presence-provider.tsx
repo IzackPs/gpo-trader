@@ -75,7 +75,7 @@ export function PresenceProvider({ children }: { children: React.ReactNode }) {
         channel.untrack().then(() => supabase.removeChannel(channel!));
       }
     };
-  }, [updatePresenceState]);
+  }, [updatePresenceState, supabase]);
 
   const value = useMemo(
     () => ({ onlineUserIds }),

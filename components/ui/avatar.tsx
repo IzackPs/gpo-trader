@@ -1,29 +1,47 @@
 import * as React from "react";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 const DEFAULT_AVATAR =
   "https://cdn.discordapp.com/embed/avatars/0.png";
 
-export interface AvatarProps extends React.ImgHTMLAttributes<HTMLImageElement> {
+const SIZE = 40;
+
+export interface AvatarProps {
+  src?: string | null;
+  alt?: string;
+  className?: string;
   fallback?: string;
+  width?: number;
+  height?: number;
 }
 
-const Avatar = React.forwardRef<HTMLImageElement, AvatarProps>(
-  ({ src, alt = "", className, fallback = DEFAULT_AVATAR, ...props }, ref) => (
-    <img
+const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
+  (
+    {
+      src,
+      alt = "",
+      className,
+      fallback = DEFAULT_AVATAR,
+      width = SIZE,
+      height = SIZE,
+    },
+    ref
+  ) => (
+    <div
       ref={ref}
-      src={src ?? fallback}
-      alt={alt}
-      width={40}
-      height={40}
-      className={cn(
-        "size-10 rounded-full border border-slate-700 object-cover shrink-0",
-        className
-      )}
-      loading="lazy"
-      decoding="async"
-      {...props}
-    />
+      className={cn("relative shrink-0 overflow-hidden rounded-full", className)}
+      style={{ width, height }}
+    >
+      <Image
+        src={src ?? fallback}
+        alt={alt}
+        width={width}
+        height={height}
+        className="object-cover"
+        sizes={`${width}px`}
+      />
+    </div>
   )
 );
 Avatar.displayName = "Avatar";

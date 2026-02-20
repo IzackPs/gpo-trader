@@ -124,12 +124,12 @@ export default async function DashboardPage() {
         {/* Minha reputação */}
         <Card>
           <CardHeader className="flex flex-row items-center gap-4">
-            <img
+            <Avatar
               src={avatarUrl}
               alt=""
               width={64}
               height={64}
-              className="size-16 rounded-full border-2 border-slate-700 object-cover"
+              className="border-2 border-slate-700"
             />
             <div className="min-w-0">
               <CardTitle className="text-xl">{profile.username}</CardTitle>

@@ -52,7 +52,7 @@ export function MatchNotifications() {
     }
 
     fetchMatches();
-  }, []);
+  }, [supabase]);
 
   if (loading || matches.length === 0) {
     return null;

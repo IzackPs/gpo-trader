@@ -13,10 +13,16 @@ Documento que regista os pontos levantados pela auditoria pós-validação. Iten
 
 ---
 
-## Avisos no console (conhecidos, não bloqueiam)
+## Avisos no console e lint (resolvidos)
 
-- **Middleware (Next.js 16):** O framework pode exibir aviso de que "middleware" está a ser descontinuado em favor de "proxy". O middleware atual continua a funcionar; a migração para a nova convenção ficará para uma versão futura do Next.js.
-- **Lint:** Avisos inofensivos relacionados a `next/image` (uso de `<img>` em alguns componentes) e dependências de `useEffect` foram aceites como dívida técnica para agilizar a entrega. Podem ser corrigidos em iterações posteriores.
+- **next/image:** As tags `<img>` foram substituídas pelo componente otimizado `<Image>` do `next/image`: `components/ui/avatar.tsx` usa `next/image` (com `remotePatterns` para `cdn.discordapp.com` em `next.config.ts`); a página do dashboard usa o componente `Avatar` em vez de `<img>` direto. Build e lint sem avisos de imagem.
+- **useEffect:** As dependências residuais foram corrigidas: `supabase` foi adicionado aos arrays de dependências em `components/market/match-notifications.tsx`, `components/market/presence-provider.tsx` e `components/trades/TradeChat.tsx`, eliminando os avisos do `react-hooks/exhaustive-deps`.
+
+## Evoluções futuras (quando o produto escalar)
+
+- **Middleware → proxy (Next.js 16):** Quando o Next.js descontinuar totalmente o conceito de "middleware", a lógica atual em `middleware.ts` (proteção de rotas, refresh de sessão Supabase) terá de ser migrada para a nova arquitetura baseada em **"proxy"**. A documentação e o guia de migração do Next.js devem ser consultados nessa altura; até lá, o middleware atual continua a funcionar (com aviso no build).
+- **Rate limit no Edge:** O limite de requisições está hoje na camada da aplicação (Server Actions: `createListing`, `sendTradeMessage`). Em caso de DDoS ou pico anormal, o ideal será colocar rate limit **no Edge** (configuração da Vercel ou via Cloudflare) para bloquear tráfego antes de chegar ao servidor.
+- **Cache de matchmaking:** Com muitas ofertas, `find_matches` e `find_matches_for_user` podem pesar no banco. A solução será usar **Views Materializadas** no PostgreSQL (atualizadas por trigger ou job) ou uma camada de **cache** (ex.: Redis) para armazenar resultados de matchmaking e invalidar com TTL ou ao publicar/remover ofertas.
 
 ---
 
@@ -52,7 +58,11 @@ Documento que regista os pontos levantados pela auditoria pós-validação. Iten
 | **Paginação mercado** | ✅ Resolvido | getMarketListings(offset) + "Carregar mais ofertas". |
 | **FTS itens** | ✅ Resolvido | Mig 00021 name_tsv; getFilteredItems usa textSearch. |
 | **find_matches listing_items** | ✅ Resolvido | Mig 00020: find_matches e find_matches_for_user usam listing_items. |
+| **next/image e useEffect** | ✅ Resolvido | Avatar com next/image; dashboard com Avatar; deps de useEffect corrigidas (supabase). |
+| **Middleware → proxy** | 📋 Futuro | Migrar quando Next.js descontinuar middleware. |
+| **Rate limit no Edge** | 📋 Futuro | Vercel/Cloudflare para DDoS e picos. |
+| **Cache matchmaking** | 📋 Futuro | Views materializadas ou Redis quando o volume crescer. |
 
 ---
 
-*Última atualização: escalabilidade (rate limit, paginação mercado, FTS, find_matches) e avisos documentados.*
+*Última atualização: next/image e useEffect resolvidos; evoluções futuras (middleware→proxy, rate limit Edge, cache matchmaking) documentadas.*

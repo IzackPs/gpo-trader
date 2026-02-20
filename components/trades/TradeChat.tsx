@@ -77,7 +77,7 @@ export default function TradeChat({
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [transactionId]);
+  }, [transactionId, supabase]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
