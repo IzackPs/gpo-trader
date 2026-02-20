@@ -2,6 +2,13 @@
 
 Mercado seguro para **Grand Piece Online** baseado em **Web of Trust** e consenso ponderado. Next.js + Supabase.
 
+## Documentação
+
+| Documento | Conteúdo |
+|-----------|----------|
+| **[Documentação Técnica](docs/DOCUMENTACAO_TECNICA.md)** | Do zero ao ar: stack, variáveis de ambiente, migrações por ordem, deploy (Vercel + Supabase), estrutura do projeto, cron, ISR, RLS, referências. |
+| **[Documentação de Usabilidade](docs/DOCUMENTACAO_USABILIDADE.md)** | Guia para utilizadores: o que é a plataforma, login, criar oferta, aceitar e confirmar troca, disputas, dashboard, Bolsa/Economia, admin. |
+
 ## Stack
 
 - **Frontend:** Next.js 16 (App Router)
