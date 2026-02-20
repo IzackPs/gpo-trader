@@ -10,19 +10,22 @@ const CATEGORIES: ItemCategory[] = [
   "ACCESSORY",
 ];
 
-/** Limite máximo de itens por busca (evita sobrecarga com catálogo grande). */
-const ITEMS_QUERY_LIMIT = 200;
+/** Tamanho da página na paginação (permite "Carregar mais" e evita limite cego). */
+const ITEMS_PAGE_SIZE = 50;
 /** Comprimento máximo do termo de busca (evita abuso e queries pesadas). */
 const SEARCH_MAX_LENGTH = 150;
 
+export type GetFilteredItemsResult = { items: Item[]; hasMore: boolean };
+
 /**
- * Busca itens no servidor com filtro por nome (ilike) e categoria.
- * Limitado a ITEMS_QUERY_LIMIT para escalabilidade.
+ * Busca itens no servidor com filtro por nome (ilike) e categoria, com paginação.
+ * Debounce no frontend (300ms) antes de chamar reduz chamadas ao pesquisar.
  */
 export async function getFilteredItems(
   search?: string,
-  category?: ItemCategory | "ALL"
-): Promise<Item[]> {
+  category?: ItemCategory | "ALL",
+  offset = 0
+): Promise<GetFilteredItemsResult> {
   const supabase = await createClient();
 
   let query = supabase
@@ -31,7 +34,7 @@ export async function getFilteredItems(
     .eq("is_active", true)
     .order("category", { ascending: true })
     .order("name", { ascending: true })
-    .limit(ITEMS_QUERY_LIMIT);
+    .range(offset, offset + ITEMS_PAGE_SIZE - 1);
 
   const searchTrim = search?.trim().slice(0, SEARCH_MAX_LENGTH);
   if (searchTrim) {
@@ -46,8 +49,9 @@ export async function getFilteredItems(
 
   if (error) {
     console.error("getFilteredItems:", error);
-    return [];
+    return { items: [], hasMore: false };
   }
 
-  return (data as Item[]) ?? [];
+  const items = (data as Item[]) ?? [];
+  return { items, hasMore: items.length === ITEMS_PAGE_SIZE };
 }

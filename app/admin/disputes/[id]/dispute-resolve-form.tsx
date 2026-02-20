@@ -1,12 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { createClient } from "@/utils/supabase/client";
+import { useActionState } from "react";
 import { Save, Loader2 } from "lucide-react";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { resolveDispute } from "./actions";
 
 const STATUS_OPTIONS = [
   { value: "OPEN", label: "Aberta" },
@@ -26,42 +25,19 @@ export function DisputeResolveForm({
   currentStatus,
   currentAdminNotes,
 }: DisputeResolveFormProps) {
-  const supabase = createClient();
-  const router = useRouter();
-  const [status, setStatus] = useState(currentStatus);
-  const [adminNotes, setAdminNotes] = useState(currentAdminNotes);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
-    setSaving(true);
-
-    const { error: err } = await supabase
-      .from("dispute_cases")
-      .update({
-        status,
-        admin_notes: adminNotes.trim() || null,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", disputeId);
-
-    setSaving(false);
-    if (err) {
-      setError(err.message);
-      return;
-    }
-    router.refresh();
-  }
+  const [state, formAction, isPending] = useActionState(
+    (prev: { error: string | null } | null, formData: FormData) =>
+      resolveDispute(disputeId, prev, formData),
+    null
+  );
 
   return (
     <Card>
       <CardContent className="p-6">
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {error && (
+        <form action={formAction} className="space-y-4">
+          {state?.error && (
             <Alert variant="error">
-              <p>{error}</p>
+              <p>{state.error}</p>
             </Alert>
           )}
 
@@ -71,8 +47,8 @@ export function DisputeResolveForm({
             </label>
             <select
               id="status"
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
+              name="status"
+              defaultValue={currentStatus}
               className="w-full rounded-lg border border-white/10 bg-slate-900/60 px-4 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 focus:ring-offset-slate-950"
             >
               {STATUS_OPTIONS.map((o) => (
@@ -89,9 +65,9 @@ export function DisputeResolveForm({
             </label>
             <textarea
               id="admin_notes"
+              name="admin_notes"
               rows={4}
-              value={adminNotes}
-              onChange={(e) => setAdminNotes(e.target.value)}
+              defaultValue={currentAdminNotes}
               className="w-full rounded-lg border border-white/10 bg-slate-900/60 px-4 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 focus:ring-offset-slate-950 resize-y"
               placeholder="Registo interno da resolução..."
             />
@@ -101,10 +77,10 @@ export function DisputeResolveForm({
             type="submit"
             variant="primary"
             size="md"
-            disabled={saving}
-            leftIcon={saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+            disabled={isPending}
+            leftIcon={isPending ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
           >
-            {saving ? "A guardar…" : "Guardar"}
+            {isPending ? "A guardar…" : "Guardar"}
           </Button>
         </form>
       </CardContent>

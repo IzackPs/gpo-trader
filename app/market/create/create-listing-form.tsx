@@ -62,7 +62,9 @@ export function CreateListingForm({
     "ALL"
   );
   const [displayItems, setDisplayItems] = useState<Item[]>(items);
+  const [hasMore, setHasMore] = useState(items.length >= 50);
   const [filterLoading, setFilterLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   const atLimit = openListingsCount >= maxListings;
   const accountTooNew = accountAgeDays < 30;
@@ -74,14 +76,28 @@ export function CreateListingForm({
 
   const fetchFiltered = useCallback(async (s: string, cat: ItemCategory | "ALL") => {
     setFilterLoading(true);
-    const result = await getFilteredItems(s || undefined, cat);
-    setDisplayItems(result);
+    const result = await getFilteredItems(s || undefined, cat, 0);
+    setDisplayItems(result.items);
+    setHasMore(result.hasMore);
     setFilterLoading(false);
   }, []);
+
+  const loadMore = useCallback(async () => {
+    setLoadingMore(true);
+    const result = await getFilteredItems(
+      search.trim() || undefined,
+      categoryFilter,
+      displayItems.length
+    );
+    setDisplayItems((prev) => [...prev, ...result.items]);
+    setHasMore(result.hasMore);
+    setLoadingMore(false);
+  }, [search, categoryFilter, displayItems.length]);
 
   useEffect(() => {
     if (!search.trim() && categoryFilter === "ALL") {
       setDisplayItems(items);
+      setHasMore(items.length >= 50);
       return;
     }
     const t = setTimeout(() => {
@@ -359,6 +375,7 @@ export function CreateListingForm({
             )}
           </div>
         ) : (
+          <>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
             {filteredItems.map((item) => {
               const isSelected = selectedItems.includes(item.id);
@@ -409,6 +426,20 @@ export function CreateListingForm({
               );
             })}
           </div>
+          {hasMore && (
+            <div className="flex justify-center pt-4">
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                disabled={filterLoading || loadingMore}
+                onClick={loadMore}
+              >
+                {loadingMore ? "A carregar…" : "Carregar mais"}
+              </Button>
+            </div>
+          )}
+          </>
         )}
       </section>
 

@@ -15,37 +15,21 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 
-interface Profile {
+export interface NavbarProfile {
   reputation_score: number;
   is_admin?: boolean;
 }
 
-export default function Navbar() {
-  const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState(true);
-  const supabase = createClient();
+interface NavbarProps {
+  initialUser?: User | null;
+  initialProfile?: NavbarProfile | null;
+}
 
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      const { data: { user: u } } = await supabase.auth.getUser();
-      if (!mounted) return;
-      setUser(u ?? null);
-      if (u) {
-        const { data: p } = await supabase
-          .from("profiles")
-          .select("reputation_score, is_admin")
-          .eq("id", u.id)
-          .single();
-        setProfile((p as Profile) ?? null);
-      } else {
-        setProfile(null);
-      }
-      setLoading(false);
-    })();
-    return () => { mounted = false; };
-  }, [supabase]);
+export default function Navbar({ initialUser = null, initialProfile = null }: NavbarProps) {
+  const [user, setUser] = useState<User | null>(initialUser ?? null);
+  const [profile, setProfile] = useState<NavbarProfile | null>(initialProfile ?? null);
+  const loading = false;
+  const supabase = createClient();
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
@@ -53,7 +37,7 @@ export default function Navbar() {
         setUser(u ?? null);
         if (u) {
           void supabase.from("profiles").select("reputation_score, is_admin").eq("id", u.id).single().then(({ data: p }) => {
-            setProfile((p as Profile) ?? null);
+            setProfile(p ?? null);
           });
         } else {
           setProfile(null);

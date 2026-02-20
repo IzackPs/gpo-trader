@@ -125,23 +125,44 @@ export default async function ListingDetailPage({ params }: Props) {
             </div>
 
             <div className="space-y-3">
-              {itemsDetails?.map((item) => (
-                <div key={item.id} className="flex items-center gap-4 bg-slate-950 p-4 rounded-lg border border-slate-800">
-                  <div className="w-12 h-12 bg-slate-800 rounded-full flex items-center justify-center text-2xl">
-                    {item.category === 'FRUIT' ? '🍎' : '⚔️'}
+              {itemsArray.map((entry: { item_id: number; qty?: number }, index: number) => {
+                const item = itemsDetails?.find((i: { id: number }) => i.id === entry.item_id);
+                const discontinued = !item || item.is_active === false;
+                return (
+                  <div
+                    key={`${entry.item_id}-${index}`}
+                    className={`flex items-center gap-4 rounded-lg border p-4 ${
+                      discontinued ? "border-amber-800/50 bg-amber-500/5" : "border-slate-800 bg-slate-950"
+                    }`}
+                  >
+                    <div className="flex size-12 items-center justify-center rounded-full bg-slate-800 text-2xl">
+                      {item?.category === "FRUIT" ? "🍎" : "⚔️"}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-bold text-white">
+                        {discontinued ? (
+                          <span className="text-amber-400/90">
+                            {item?.name ?? "Item"}{" "}
+                            <span className="rounded bg-amber-500/20 px-1.5 py-0.5 text-xs font-normal text-amber-300">
+                              [Descontinuado]
+                            </span>
+                          </span>
+                        ) : (
+                          item?.name
+                        )}
+                      </h3>
+                      <p className="text-xs text-slate-400">{item?.category ?? "—"}</p>
+                    </div>
+                    {!discontinued && (
+                      <div className="ml-auto text-right">
+                        <p className="text-sm font-mono text-emerald-400">{item?.market_value_leg_chests} 💎</p>
+                      </div>
+                    )}
                   </div>
-                  <div>
-                    <h3 className="font-bold text-white">{item.name}</h3>
-                    <p className="text-xs text-slate-400">{item.category}</p>
-                  </div>
-                  <div className="ml-auto text-right">
-                    <p className="text-sm font-mono text-emerald-400">{item.market_value_leg_chests} 💎</p>
-                  </div>
-                </div>
-              ))}
-              
-              {itemsDetails?.length === 0 && (
-                <p className="py-4 text-center text-slate-500">Nenhum item carregado.</p>
+                );
+              })}
+              {itemsArray.length === 0 && (
+                <p className="py-4 text-center text-slate-500">Nenhum item nesta oferta.</p>
               )}
             </div>
             </CardContent>

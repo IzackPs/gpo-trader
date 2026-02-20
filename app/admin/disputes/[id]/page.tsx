@@ -5,7 +5,6 @@ import { ArrowLeft } from "lucide-react";
 import { PageContainer } from "@/components/layout/page-container";
 import { Card, CardContent } from "@/components/ui/card";
 import { DisputeResolveForm } from "./dispute-resolve-form";
-import type { DisputeCase } from "@/types";
 
 const STATUS_LABELS: Record<string, string> = {
   OPEN: "Aberta",
@@ -41,7 +40,7 @@ export default async function AdminDisputeDetailPage({ params }: Props) {
   const { data: transaction } = await supabase
     .from("transactions")
     .select("id, buyer_id, seller_id, status, listing_id, created_at")
-    .eq("id", (dispute as DisputeCase).transaction_id)
+    .eq("id", dispute.transaction_id)
     .single();
 
   const { data: evidence } = await supabase
@@ -53,7 +52,7 @@ export default async function AdminDisputeDetailPage({ params }: Props) {
   const { data: reporter } = await supabase
     .from("profiles")
     .select("username, avatar_url")
-    .eq("id", (dispute as DisputeCase).reported_by)
+    .eq("id", dispute.reported_by)
     .single();
 
   return (
@@ -71,7 +70,7 @@ export default async function AdminDisputeDetailPage({ params }: Props) {
             Disputa — Resolver
           </h1>
           <p className="mt-1 text-sm text-slate-500">
-            Transação: {transaction?.id?.slice(0, 8)}… | Reportado por: {reporter?.username ?? (dispute as DisputeCase).reported_by.slice(0, 8)}…
+            Transação: {transaction?.id?.slice(0, 8)}… | Reportado por: {reporter?.username ?? dispute.reported_by.slice(0, 8)}…
           </p>
         </div>
 
@@ -79,16 +78,16 @@ export default async function AdminDisputeDetailPage({ params }: Props) {
           <CardContent className="p-6 space-y-3">
             <p className="text-sm">
               <span className="text-slate-400">Status:</span>{" "}
-              <strong className="text-slate-200">{STATUS_LABELS[(dispute as DisputeCase).status] ?? (dispute as DisputeCase).status}</strong>
+              <strong className="text-slate-200">{STATUS_LABELS[dispute.status] ?? dispute.status}</strong>
             </p>
-            {(dispute as DisputeCase).reason && (
+            {dispute.reason && (
               <p className="text-sm text-slate-400">
-                <span className="text-slate-500">Motivo:</span> {(dispute as DisputeCase).reason}
+                <span className="text-slate-500">Motivo:</span> {dispute.reason}
               </p>
             )}
-            {(dispute as DisputeCase).admin_notes && (
+            {dispute.admin_notes && (
               <p className="text-sm text-slate-400">
-                <span className="text-slate-500">Notas admin:</span> {(dispute as DisputeCase).admin_notes}
+                <span className="text-slate-500">Notas admin:</span> {dispute.admin_notes}
               </p>
             )}
           </CardContent>
@@ -96,8 +95,8 @@ export default async function AdminDisputeDetailPage({ params }: Props) {
 
         <DisputeResolveForm
           disputeId={disputeId}
-          currentStatus={(dispute as DisputeCase).status}
-          currentAdminNotes={(dispute as DisputeCase).admin_notes ?? ""}
+          currentStatus={dispute.status}
+          currentAdminNotes={dispute.admin_notes ?? ""}
         />
 
         {evidence && evidence.length > 0 && (
@@ -105,7 +104,7 @@ export default async function AdminDisputeDetailPage({ params }: Props) {
             <CardContent className="p-6">
               <h2 className="font-semibold text-slate-50 mb-3">Evidências</h2>
               <ul className="space-y-2 text-sm text-slate-400">
-                {evidence.map((e: { id: string; file_name: string | null; file_url: string; created_at: string }) => (
+                {evidence.map((e) => (
                   <li key={e.id}>
                     {e.file_name ?? "Arquivo"} —{" "}
                     <a
