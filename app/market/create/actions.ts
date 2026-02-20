@@ -38,7 +38,8 @@ export async function getFilteredItems(
 
   const searchTrim = search?.trim().slice(0, SEARCH_MAX_LENGTH);
   if (searchTrim) {
-    query = query.ilike("name", `%${searchTrim}%`);
+    const safeSearch = searchTrim.replace(/[%_\\]/g, "\\$&");
+    query = query.ilike("name", `%${safeSearch}%`);
   }
 
   if (category && category !== "ALL" && CATEGORIES.includes(category)) {

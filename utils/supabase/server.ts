@@ -1,4 +1,3 @@
-import type { Database } from '@/types/database.gen'
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { cookies } from 'next/headers'
@@ -22,7 +21,7 @@ export async function createClient() {
   const { url, key } = getSupabaseEnv()
   const cookieStore = await cookies()
 
-  return createServerClient<Database>(
+  return createServerClient(
     url,
     key,
     {
@@ -56,5 +55,5 @@ export async function createClient() {
  */
 export function createClientPublic() {
   const { url, key } = getSupabaseEnv()
-  return createSupabaseClient<Database>(url, key)
+  return createSupabaseClient(url, key)
 }

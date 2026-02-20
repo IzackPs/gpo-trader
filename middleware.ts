@@ -21,18 +21,35 @@ export async function middleware(request: NextRequest) {
 
   const response = NextResponse.next({ request });
 
+  const cookieOverrides = new Map<string, string>();
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
         getAll() {
-          return request.cookies.getAll().map((c) => ({ name: c.name, value: c.value }));
+          const seen = new Set<string>();
+          const result: { name: string; value: string }[] = [];
+          request.cookies.getAll().forEach((c) => {
+            seen.add(c.name);
+            result.push({
+              name: c.name,
+              value: cookieOverrides.get(c.name) ?? c.value,
+            });
+          });
+          cookieOverrides.forEach((value, name) => {
+            if (!seen.has(name)) {
+              result.push({ name, value });
+            }
+          });
+          return result;
         },
         setAll(cookiesToSet: { name: string; value: string; options?: Record<string, unknown> }[]) {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options as object)
-          );
+          cookiesToSet.forEach(({ name, value, options }) => {
+            cookieOverrides.set(name, value);
+            response.cookies.set(name, value, options as object);
+          });
         },
       },
     }

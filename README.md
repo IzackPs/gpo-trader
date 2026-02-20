@@ -8,6 +8,8 @@ Mercado seguro para **Grand Piece Online** baseado em **Web of Trust** e consens
 |-----------|----------|
 | **[Documentação Técnica](docs/DOCUMENTACAO_TECNICA.md)** | Do zero ao ar: stack, variáveis de ambiente, migrações por ordem, deploy (Vercel + Supabase), estrutura do projeto, cron, ISR, RLS, referências. |
 | **[Documentação de Usabilidade](docs/DOCUMENTACAO_USABILIDADE.md)** | Guia para utilizadores: o que é a plataforma, login, criar oferta, aceitar e confirmar troca, disputas, dashboard, Bolsa/Economia, admin. |
+| **[Deploy Vercel — Passo a passo](docs/DEPLOY_VERCEL_PASSO_A_PASSO.md)** | Do zero ao online: contas, Supabase, migrações, Discord OAuth, GitHub, Vercel, callbacks de produção. |
+| **[Checklist MVP Vercel](docs/MVP_VERCEL_CHECKLIST.md)** | Validação antes e depois do deploy: build, env, migrações, OAuth em produção, testes. |
 
 ## Stack
 
@@ -38,6 +40,7 @@ No Supabase: SQL Editor ou via CLI:
    - `supabase/migrations/00004_reputation_trigger_ensure.sql` (reputação ao confirmar troca)
    - `supabase/migrations/00005_reputation_plus_one_discord_age.sql` (**obrigatório**) — define +1 XP ao confirmar troca e calcula **idade da conta Discord** pelo snowflake (não pelo tempo de login no site).
    - `supabase/migrations/00006_admin_items.sql` — adiciona `is_admin` em `profiles` e permissão para admins atualizarem preços em `items`.
+   - Migrações **00007** a **00018** (listagens, disputas, WAP, soft deletes, etc.). Aplique em ordem numérica ou use `supabase db push`. Ver [Documentação Técnica](docs/DOCUMENTACAO_TECNICA.md) para a lista completa.
 
 2. Opcional – seed de itens:
    - `supabase/seed.sql`

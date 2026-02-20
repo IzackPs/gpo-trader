@@ -8,18 +8,35 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
+/** Mapa sender_id -> nome para exibição. Evita depender do JOIN no Realtime (payload.new não traz profiles). */
+export interface TradeChatParticipants {
+  [userId: string]: string;
+}
+
 interface TradeChatProps {
   transactionId: string;
   currentUserId: string;
+  /** Nomes dos participantes (buyer_id e seller_id). Usado no render e para mensagens do Realtime sem JOIN. */
+  participants: TradeChatParticipants;
 }
 
 type MessageWithProfile = TradeMessage & {
   profiles?: { username?: string } | null;
 };
 
+function getSenderDisplayName(
+  senderId: string,
+  currentUserId: string,
+  participants: TradeChatParticipants
+): string {
+  if (senderId === currentUserId) return "Você";
+  return participants[senderId] ?? "Usuário";
+}
+
 export default function TradeChat({
   transactionId,
   currentUserId,
+  participants,
 }: TradeChatProps) {
   const supabase = createClient();
   const [messages, setMessages] = useState<MessageWithProfile[]>([]);
@@ -49,7 +66,8 @@ export default function TradeChat({
           filter: `transaction_id=eq.${transactionId}`,
         },
         (payload) => {
-          setMessages((prev) => [...prev, payload.new as MessageWithProfile]);
+          const newMessage = payload.new as MessageWithProfile;
+          setMessages((prev) => [...prev, newMessage]);
         }
       )
       .subscribe();
@@ -100,7 +118,9 @@ export default function TradeChat({
         ) : (
           messages.map((msg) => {
             const isMe = msg.sender_id === currentUserId;
-            const senderName = msg.profiles?.username ?? "Usuário";
+            const senderName =
+              msg.profiles?.username ??
+              getSenderDisplayName(msg.sender_id, currentUserId, participants);
             return (
               <div
                 key={msg.id}

@@ -216,7 +216,14 @@ export default async function TradeRoomPage({
         )}
 
         {itemsAgreed && !isComplete && !isDisputed && (
-          <TradeChat transactionId={id} currentUserId={user.id} />
+          <TradeChat
+            transactionId={id}
+            currentUserId={user.id}
+            participants={{
+              [transaction.buyer_id]: transaction.buyer?.username ?? "Comprador",
+              [transaction.seller_id]: transaction.seller?.username ?? "Vendedor",
+            }}
+          />
         )}
 
         {!isComplete && !isDisputed && (
