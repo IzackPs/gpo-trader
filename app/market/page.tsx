@@ -1,92 +1,52 @@
-import { createClientPublic } from "@/utils/supabase/server";
-import { ArrowRightLeft, PlusCircle, TrendingUp } from "lucide-react";
+import { PlusCircle, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { PageContainer } from "@/components/layout/page-container";
 import { SectionHeader } from "@/components/layout/section-header";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { ListingCard } from "@/components/market/listing-card";
 import { MarketClient } from "./market-client";
-import type { Listing } from "@/types";
+import { MarketWithLoadMore } from "@/components/market/market-with-load-more";
+import { PresenceProvider } from "@/components/market/presence-provider";
+import { getMarketListings } from "./actions";
 
 /** ISR: revalidar listagem a cada 15s para reduzir carga no Supabase e servir do CDN. */
 export const revalidate = 15;
 
 export default async function MarketPage() {
-  const supabase = createClientPublic();
-
-  const { data: rawListings, error } = await supabase
-    .from("listings")
-    .select(`
-      *,
-      profiles (username, avatar_url, reputation_score, rank_tier, last_seen_at)
-    `)
-    .eq("status", "OPEN")
-    .order("created_at", { ascending: false })
-    .limit(60);
-
-  if (error) {
-    console.error("Erro Supabase:", error);
-  }
-
-  const listings = (rawListings ?? []) as Listing[];
+  const { listings: initialListings, hasMore: initialHasMore } =
+    await getMarketListings(0);
 
   return (
     <main>
-      <PageContainer maxWidth="lg" className="space-y-8">
-        <SectionHeader
-          title="Mercado global"
-          description="Ofertas recentes de jogadores verificados."
-          actions={
-            <div className="flex flex-wrap items-center gap-2">
-              <Link href="/market/analytics">
-                <Button variant="secondary" size="md" leftIcon={<TrendingUp size={18} />}>
-                  Bolsa / Economia
-                </Button>
-              </Link>
-              <Link href="/market/create">
-                <Button variant="primary" size="md" leftIcon={<PlusCircle size={20} />}>
-                  Criar oferta
-                </Button>
-              </Link>
-            </div>
-          }
-        />
-
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {listings.length === 0 ? (
-            <Card
-              as="section"
-              className="col-span-full flex flex-col items-center justify-center border-dashed py-16 text-center"
-              aria-label="Estado vazio"
-            >
-              <CardContent className="flex flex-col items-center gap-4 p-0">
-                <div className="flex size-16 items-center justify-center rounded-full bg-slate-800">
-                  <ArrowRightLeft className="text-slate-500" size={32} aria-hidden />
-                </div>
-                <div className="space-y-1">
-                  <h2 className="text-xl font-semibold text-slate-50">
-                    O mercado está vazio
-                  </h2>
-                  <p className="text-slate-500">
-                    Seja o primeiro a listar um item e ganhe reputação.
-                  </p>
-                </div>
-                <Link href="/market/create">
-                  <Button variant="primary" size="md">
-                    Criar primeira oferta
+      <PresenceProvider>
+        <PageContainer maxWidth="lg" className="space-y-8">
+          <SectionHeader
+            title="Mercado global"
+            description="Ofertas recentes de jogadores verificados."
+            actions={
+              <div className="flex flex-wrap items-center gap-2">
+                <Link href="/market/analytics">
+                  <Button variant="secondary" size="md" leftIcon={<TrendingUp size={18} />}>
+                    Bolsa / Economia
                   </Button>
                 </Link>
-              </CardContent>
-            </Card>
-          ) : (
-            listings.map((listing) => (
-              <ListingCard key={listing.id} listing={listing} />
-            ))
-          )}
-        </div>
-      </PageContainer>
-      <MarketClient />
+                <Link href="/market/create">
+                  <Button variant="primary" size="md" leftIcon={<PlusCircle size={20} />}>
+                    Criar oferta
+                  </Button>
+                </Link>
+              </div>
+            }
+          />
+
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <MarketWithLoadMore
+              initialListings={initialListings}
+              initialHasMore={initialHasMore}
+            />
+          </div>
+        </PageContainer>
+        <MarketClient />
+      </PresenceProvider>
     </main>
   );
 }

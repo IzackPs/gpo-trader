@@ -10,7 +10,7 @@ Use este documento para validar o projeto antes e depois de subir o MVP na Verce
 - [ ] **Build:** `npm run build` termina com sucesso.
 - [ ] **Lint:** `npm run lint` sem erros (avisos de `next/image` ou `useEffect` deps são aceitáveis).
 - [ ] **TypeScript:** `npx tsc --noEmit` sem erros.
-- [ ] **Supabase:** Migrações 00001–00018 aplicadas no projeto (SQL Editor ou `supabase db push`).
+- [ ] **Supabase:** Migrações 00001–00021 aplicadas no projeto (SQL Editor ou `supabase db push`).
 - [ ] **Supabase Auth:** Discord OAuth configurado; redirect URL inclui `http://localhost:3000/auth/callback`.
 - [ ] **Supabase Realtime:** Tabela `trade_messages` na publicação `supabase_realtime`.
 - [ ] **Storage (opcional):** Bucket `dispute-evidence` criado e políticas RLS configuradas se usar disputas com upload.
@@ -60,4 +60,4 @@ npx tsc --noEmit
 
 ---
 
-*Última atualização: validação pós-correções (tipos Supabase revertidos para build estável; migrações 00001–00018; docs e segurança aplicados).*
+*Última atualização: migrações 00001–00021; rate limit (ofertas e mensagens); paginação mercado; FTS em itens; Realtime Presence; listing_items como fonte de verdade.*

@@ -106,6 +106,9 @@ As migrações devem ser executadas **por ordem numérica**. No Supabase: **SQL 
 | 16 | `00016_presence_rpc_and_pagination_fix.sql` | RPC de presença e correções de paginação |
 | 17 | `00017_soft_deletes_isr_analytics.sql` | `is_active` em items (soft delete), validação de itens ativos, `get_market_prices_last_week()` |
 | 18 | `00018_listing_items_wap_admin_disputes.sql` | WAP usa `listing_items` (não JSONB); políticas RLS para admin ver/atualizar disputas |
+| 19 | `00019_listing_items_source_of_truth.sql` | Fonte de verdade = `listing_items`; trigger deriva `listings.items` (JSONB); RLS INSERT/UPDATE/DELETE em `listing_items` |
+| 20 | `00020_find_matches_use_listing_items.sql` | `find_matches` e `find_matches_for_user` usam `listing_items` em vez de JSONB |
+| 21 | `00021_items_full_text_search.sql` | Coluna `items.name_tsv` (tsvector) + índice GIN para busca full-text |
 
 **Seed (opcional):** Executar `supabase/seed.sql` no SQL Editor para popular a tabela `items` com dados iniciais.
 
@@ -126,36 +129,49 @@ Para upload de evidências em disputas:
 
 ```
 gpo-trader/
-├── app/                    # Next.js App Router
-│   ├── layout.tsx           # Layout raiz (Navbar, Footer)
-│   ├── page.tsx             # Landing page
+├── app/                        # Next.js App Router
+│   ├── layout.tsx              # Layout raiz (Navbar, Footer)
+│   ├── page.tsx                 # Landing page
 │   ├── globals.css
-│   ├── auth/                # Login Discord, callback, erro de code
-│   ├── dashboard/           # Perfil, reputação, tier, histórico
-│   ├── market/              # Mercado global
-│   │   ├── page.tsx         # Listagem de ofertas (ISR 15s, createClientPublic)
+│   ├── auth/                    # Login Discord, callback, auth-code-error
+│   ├── dashboard/               # Perfil, reputação, tier, histórico
+│   ├── market/                  # Mercado global
+│   │   ├── page.tsx             # Listagem paginada (ISR 15s), PresenceProvider, MarketWithLoadMore
+│   │   ├── actions.ts           # getMarketListings(offset)
 │   │   ├── market-client.tsx
-│   │   ├── create/          # Criar oferta (protegido)
-│   │   ├── [id]/            # Detalhe da oferta, aceitar
-│   │   ├── item/[id]/       # Página do item
-│   │   └── analytics/       # Bolsa / WAP última semana (ISR 60s)
-│   ├── trades/[id]/         # Sala de troca (confirmar, disputar, chat)
-│   │   └── dispute/         # Abrir disputa e enviar evidências
-│   ├── admin/items/         # Admin: preços e is_active (soft delete)
+│   │   ├── create/              # Criar oferta; actions: getFilteredItems (FTS), createListing (rate limit)
+│   │   ├── [id]/                # Detalhe da oferta, aceitar
+│   │   ├── item/[id]/           # Página do item
+│   │   └── analytics/           # Bolsa / WAP última semana (ISR 60s)
+│   ├── trades/
+│   │   ├── actions.ts           # sendTradeMessage (rate limit)
+│   │   └── [id]/                # Sala de troca (page, dispute/)
+│   ├── admin/
+│   │   ├── layout.tsx
+│   │   ├── items/               # Preços e is_active (soft delete)
+│   │   └── disputes/            # Listagem e resolução (page, [id]/)
 │   ├── terms/
 │   └── forbidden/
-├── components/              # UI reutilizável (Button, Card, Navbar, etc.)
-├── types/                   # TypeScript (Profile, Listing, Transaction, etc.)
+├── components/
+│   ├── ui/                      # Button, Card, Input, Badge, Avatar, Alert, Skeleton, dropdown-menu
+│   ├── layout/                  # footer, section-header, page-container
+│   ├── market/                  # listing-card, market-listing-grid, market-with-load-more, presence-provider, match-notifications
+│   ├── trades/                  # TradeChat
+│   ├── landing/                 # live-stats
+│   └── Navbar.tsx
+├── lib/
+│   └── utils.ts                 # cn() e helpers partilhados
+├── types/                       # TypeScript (Profile, Listing, Transaction, etc.)
 ├── utils/
 │   └── supabase/
-│       ├── server.ts        # createClient() (cookies) e createClientPublic() (sem cookies, ISR)
-│       └── client.ts       # Cliente browser (SSR)
-├── middleware.ts            # Proteção de rotas (dashboard, market/create, admin, trades)
+│       ├── server.ts            # createClient() (cookies) e createClientPublic() (sem cookies, ISR)
+│       └── client.ts            # Cliente browser
+├── middleware.ts                # Proteção de rotas (dashboard, market/create, admin, trades)
 ├── supabase/
-│   ├── migrations/          # Todas as migrações SQL (ordem 00001–00017)
-│   ├── functions/cron-jobs/ # Edge Function opcional para cron
+│   ├── migrations/              # Migrações SQL 00001–00021
+│   ├── functions/cron-jobs/     # Edge Function opcional para cron
 │   └── seed.sql
-└── docs/                    # Documentação (este ficheiro, AUTOMATION_SETUP, etc.)
+└── docs/                        # Documentação
 ```
 
 ---
@@ -181,13 +197,13 @@ gpo-trader/
 
 ### 6.4 Mercado e listagens
 
-- **Listagem** (`/market`): Server Component com `createClientPublic()`, `revalidate = 15`. Lista ofertas OPEN com dados do perfil (username, avatar, rank_tier, last_seen_at).
-- **Criar oferta** (`/market/create`): Protegido. Validação no servidor (trigger `validate_listing_creation`): conta Discord ≥ 30 dias, strikes < 3, limite de ofertas por tier (DRIFTER 1, CIVILIAN 3, MERCHANT/BROKER/YONKO 999). Apenas itens com `is_active = true` são listados.
-- **Detalhe** (`/market/[id]`): Ver oferta e "Aceitar oferta". Aceitar cria transação (PENDING_VERIFICATION) e bloqueia a listing (LOCKED).
+- **Listagem** (`/market`): Server Component chama `getMarketListings(0)` (action em `app/market/actions.ts`); devolve 24 ofertas por página. Cliente usa `PresenceProvider` (Realtime Presence no canal `market-presence`) e `MarketWithLoadMore` com botão **“Carregar mais ofertas”** que chama `getMarketListings(offset)`. ISR `revalidate = 15`. Indicador “Online” nos cards vem do estado de presença (sem writes na BD).
+- **Criar oferta** (`/market/create`): Protegido. Fluxo via server action **`createListing(side, selectedItemIds)`**: rate limit (máx. 3 ofertas em 5 minutos por utilizador); INSERT em `listings` com `items: []` e depois em **`listing_items`**; trigger `sync_listings_jsonb_from_listing_items` preenche `listings.items`. Validação no servidor (trigger `validate_listing_creation`): conta Discord ≥ 30 dias, strikes < 3, limite de ofertas por tier. Busca de itens: **`getFilteredItems`** com paginação e **Full Text Search** (coluna `items.name_tsv`, migração 00021) quando há termo de busca.
+- **Detalhe** (`/market/[id]`): Ver oferta e "Aceitar oferta". Aceitar cria transação (PENDING_VERIFICATION) e bloqueia a listing (LOCKED). Itens exibidos a partir de `listings.items` (derivado de `listing_items`).
 
 ### 6.5 Sala de troca
 
-- **`/trades/[id]`**: Comprador e vendedor confirmam a troca (double handshake). Quando ambos confirmam, a transação passa a CONFIRMED, reputação sobe (trigger `give_reputation_on_confirm`). Chat em tempo real (`trade_messages` + Realtime). Opção "Não realizou / Golpe" abre disputa.
+- **`/trades/[id]`**: Comprador e vendedor confirmam a troca (double handshake). Quando ambos confirmam, a transação passa a CONFIRMED, reputação sobe (trigger `give_reputation_on_confirm`). Chat em tempo real: envio via server action **`sendTradeMessage(transactionId, content)`** com **rate limit** (máx. 15 mensagens por 1 minuto por utilizador na mesma transação); inserção em `trade_messages`; Realtime propaga novas mensagens. Opção "Não realizou / Golpe" abre disputa.
 - **Disputa** (`/trades/[id]/dispute`): Upload de evidências para o bucket `dispute-evidence`; registro em `dispute_cases`.
 
 ### 6.6 Admin
@@ -259,7 +275,8 @@ Para não depender apenas de execução manual, agende no Supabase (Database →
 - **Consenso de preço (cron/edge):** `docs/EDGE_FUNCTION_PRICE_CONSENSUS.md`
 - **Decisão listing_items vs JSONB e matchmaking:** `docs/DECISAO_LISTING_ITEMS.md`
 - **Validação (arquitetura, segurança, escalabilidade):** `docs/VALIDACAO_PROJETO.md`
+- **Dívida técnica (evolução pós-MVP):** `docs/DIVIDA_TECNICA.md`
 
 ---
 
-*Última atualização: referente ao estado do projeto com migração 00017 (soft deletes, ISR, analytics) e documentação de usabilidade em paralelo.*
+*Última atualização: migrações 00019–00021 (listing_items fonte de verdade, find_matches com listing_items, FTS em itens); rate limit (createListing, sendTradeMessage); paginação mercado (getMarketListings + Carregar mais); Realtime Presence no mercado; documentação alinhada.*

@@ -3,6 +3,7 @@
 import { createClient } from "@/utils/supabase/client";
 import { useEffect, useRef, useState } from "react";
 import { Send, MessageCircle } from "lucide-react";
+import { sendTradeMessage } from "@/app/trades/actions";
 import type { TradeMessage } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,6 +43,7 @@ export default function TradeChat({
   const [messages, setMessages] = useState<MessageWithProfile[]>([]);
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
+  const [sendError, setSendError] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -85,13 +87,14 @@ export default function TradeChat({
     e.preventDefault();
     const text = content.trim();
     if (!text) return;
+    setSendError(null);
     setLoading(true);
-    const { error } = await supabase.from("trade_messages").insert({
-      transaction_id: transactionId,
-      sender_id: currentUserId,
-      content: text,
-    });
-    if (!error) setContent("");
+    const result = await sendTradeMessage(transactionId, text);
+    if (result.error) {
+      setSendError(result.error);
+    } else {
+      setContent("");
+    }
     setLoading(false);
   };
 
@@ -135,7 +138,7 @@ export default function TradeChat({
                   <p className="mb-0.5 font-mono text-xs opacity-80">
                     {senderName}
                   </p>
-                  <p className="break-words">{msg.content}</p>
+                  <p className="wrap-break-word">{msg.content}</p>
                 </div>
               </div>
             );
@@ -146,28 +149,35 @@ export default function TradeChat({
 
       <form
         onSubmit={sendMessage}
-        className="flex gap-2 border-t border-slate-700 p-3"
+        className="flex flex-col gap-2 border-t border-slate-700 p-3"
         aria-label="Enviar mensagem"
       >
-        <Input
-          type="text"
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          placeholder="Mensagem…"
-          maxLength={500}
-          aria-label="Texto da mensagem"
-          className="flex-1"
-        />
-        <Button
-          type="submit"
-          variant="primary"
-          size="md"
-          disabled={loading || !content.trim()}
-          className="shrink-0 px-3"
-          aria-label="Enviar"
-        >
-          <Send size={18} aria-hidden />
-        </Button>
+        {sendError && (
+          <p className="text-xs text-amber-400" role="alert">
+            {sendError}
+          </p>
+        )}
+        <div className="flex gap-2">
+          <Input
+            type="text"
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            placeholder="Mensagem…"
+            maxLength={500}
+            aria-label="Texto da mensagem"
+            className="flex-1"
+          />
+          <Button
+            type="submit"
+            variant="primary"
+            size="md"
+            disabled={loading || !content.trim()}
+            className="shrink-0 px-3"
+            aria-label="Enviar"
+          >
+            <Send size={18} aria-hidden />
+          </Button>
+        </div>
       </form>
     </section>
   );

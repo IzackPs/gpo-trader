@@ -95,7 +95,7 @@
 ### 4.1 Estrutura App Router
 
 - **Server Components:** `app/page.tsx`, `app/market/page.tsx`, `app/market/create/page.tsx`, `app/market/[id]/page.tsx`, `app/trades/[id]/page.tsx`, `app/dashboard/page.tsx`, `app/admin/items/page.tsx`. Boa divisão de fetch no servidor.
-- **Client Components:** Formulários (create listing), TradeChat, MatchNotifications, MarketClient (presença), LiveStats, Navbar. Coerente com interatividade.
+- **Client Components:** Formulários (create listing), `components/trades/TradeChat`, MatchNotifications, MarketClient (presença), LiveStats, Navbar. Coerente com interatividade; componentes agrupados por feature (market/, trades/, landing/, ui/, layout/).
 
 ### 4.2 Cliente Supabase
 

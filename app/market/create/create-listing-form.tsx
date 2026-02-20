@@ -9,14 +9,13 @@ import {
   Search,
   X,
 } from "lucide-react";
-import { createClient } from "@/utils/supabase/client";
 import type { Item, ItemCategory, RankTier } from "@/types";
 import { MAX_STRIKES_BEFORE_BLOCK } from "@/types";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { getFilteredItems } from "./actions";
+import { getFilteredItems, createListing } from "./actions";
 
 const CATEGORY_LABELS: Record<ItemCategory, string> = {
   FRUIT: "Frutas",
@@ -49,7 +48,6 @@ export function CreateListingForm({
   openListingsCount,
   maxListings,
 }: CreateListingFormProps) {
-  const supabase = createClient();
   const router = useRouter();
 
   const [submitting, setSubmitting] = useState(false);
@@ -152,30 +150,14 @@ export function CreateListingForm({
     }
 
     setSubmitting(true);
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      router.push("/");
+    const result = await createListing(side, selectedItems);
+    if (result.error) {
+      setError(result.error);
+      setSubmitting(false);
       return;
     }
-
-    const itemsJson = selectedItems.map((id) => ({ item_id: id, qty: 1 }));
-    const { error: insertError } = await supabase.from("listings").insert({
-      user_id: user.id,
-      side,
-      items: itemsJson,
-      status: "OPEN",
-    });
-
-    if (insertError) {
-      // Erro do banco (trigger de validação ou outro)
-      setError(insertError.message);
-      setSubmitting(false);
-    } else {
-      router.push("/market");
-      router.refresh();
-    }
+    router.push("/market");
+    router.refresh();
   };
 
   const selectedItemsDetails = useMemo(

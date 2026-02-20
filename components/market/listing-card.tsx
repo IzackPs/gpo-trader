@@ -16,12 +16,15 @@ function isUserOnline(lastSeenAt?: string | null): boolean {
 
 interface ListingCardProps {
   listing: Listing;
+  /** Quando fornecido (Realtime Presence), usa em vez de last_seen_at */
+  isOnline?: boolean;
 }
 
-export function ListingCard({ listing }: ListingCardProps) {
+export function ListingCard({ listing, isOnline }: ListingCardProps) {
   const profile = listing.profiles;
   const itemCount = Array.isArray(listing.items) ? listing.items.length : 0;
   const rep = profile?.reputation_score ?? 0;
+  const showOnline = isOnline !== undefined ? isOnline : (profile?.last_seen_at ? isUserOnline(profile.last_seen_at) : false);
 
   return (
     <Card className="relative overflow-hidden transition-colors hover:border-cyan-500/20">
@@ -36,13 +39,13 @@ export function ListingCard({ listing }: ListingCardProps) {
         <div className="flex items-center gap-3 mb-4">
           <div className="relative">
             <Avatar src={profile?.avatar_url ?? undefined} alt="" />
-            {profile?.last_seen_at && isUserOnline(profile.last_seen_at) && (
-              <span
-                className="absolute bottom-0 right-0 size-3 rounded-full border-2 border-slate-950 bg-emerald-500"
-                aria-label="Online"
-                title="Online"
-              />
-            )}
+            {showOnline && (
+                <span
+                  className="absolute bottom-0 right-0 size-3 rounded-full border-2 border-slate-950 bg-emerald-500"
+                  aria-label="Online"
+                  title="Online"
+                />
+              )}
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
@@ -52,7 +55,7 @@ export function ListingCard({ listing }: ListingCardProps) {
               {profile?.rank_tier && (
                 <RankBadge tier={profile.rank_tier as RankTier} showLabel={false} />
               )}
-              {profile?.last_seen_at && isUserOnline(profile.last_seen_at) && (
+              {showOnline && (
                 <span className="text-xs text-emerald-400 font-medium">Online</span>
               )}
             </div>

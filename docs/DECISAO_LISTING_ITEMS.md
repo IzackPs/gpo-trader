@@ -1,26 +1,26 @@
 # Decisão de Arquitetura: listing_items vs JSONB
 
-## Decisão definitiva
+## Decisão definitiva (atual)
 
-- **Mantemos a tabela normalizada `listing_items`** (migrações 00009 e 00015) e **adotamo-la como fonte para consultas analíticas e futuras no backend**.
-- **A aplicação continua a escrever e a ler a coluna `listings.items` (JSONB)** no fluxo de criação e exibição de ofertas. O trigger `sync_listing_items_from_jsonb` mantém `listing_items` sempre sincronizada com o JSONB.
+- **Fonte de verdade:** A tabela normalizada **`listing_items`** é a fonte de verdade para os itens de cada oferta (migrações 00009, 00015, **00019**).
+- **Escrita:** A aplicação **escreve em `listing_items`** ao criar ofertas (server action `createListing`: INSERT em `listings` com `items: []`, depois INSERT em `listing_items`).
+- **Leitura:** O trigger **`sync_listings_jsonb_from_listing_items`** (migração 00019) mantém **`listings.items` (JSONB)** derivado a partir de `listing_items`. A leitura nas páginas e em funções que ainda usam o JSONB continua a funcionar sem alteração de contrato.
 
 ## Justificação
 
-1. **Integridade e performance em SQL:** Funções como `get_market_prices_last_week()` (a partir da migração 00018) passam a usar `listing_items` em vez de `jsonb_array_elements(listings.items)`, reduzindo custo de CPU e permitindo JOINs e índices normais.
-2. **Sem breaking change no frontend:** O cliente continua a enviar e a receber `items` como array JSON na listing; não é necessário alterar formulários nem cards.
-3. **Futuro:** Quando se quiser descontinuar o JSONB, basta passar a preencher `listings.items` a partir de `listing_items` (por trigger ou na aplicação) e depois remover a escrita direta ao JSONB. Até lá, o modelo híbrido é suportado.
+1. **Integridade e performance:** WAP (`get_market_prices_last_week`, mig 00018), matchmaking (`find_matches`, `find_matches_for_user`, mig 00020) e analytics usam `listing_items` (JOINs, índices). Uma única fonte de escrita evita divergência.
+2. **Compatibilidade:** O JSONB `listings.items` continua a ser preenchido por trigger, pelo que o frontend e qualquer código que leia `listing.items` não precisam de mudar.
+3. **RLS:** A migração 00019 adiciona políticas em `listing_items` para INSERT/UPDATE/DELETE pelo dono da oferta.
 
 ## O que foi feito
 
-- **Migração 00018:** A função `get_market_prices_last_week()` foi refatorada para usar apenas `listing_items` (JOIN em `tx_weight` + `listing_items`). Transações cujo `listing_id` não tenha linhas em `listing_items` não entram no cômputo (casos antigos ou edge cases).
-- **Documentação:** Este ficheiro regista a decisão; `docs/TYPES_AND_SCHEMA.md` e `docs/ARCHITECTURE_AUDIT.md` podem referenciá-lo.
+- **Migração 00018:** WAP usa apenas `listing_items`.
+- **Migração 00019:** Trigger invertido: escrita em `listing_items` → trigger atualiza `listings.items`; RLS em `listing_items`; app passa a usar `createListing` e INSERT em `listing_items`.
+- **Migração 00020:** `find_matches` e `find_matches_for_user` refatoradas para usar `listing_items` em vez de `jsonb_array_elements(listings.items)`.
+- **Documentação:** `docs/DIVIDA_TECNICA.md` regista o estado (resolvido); `docs/DOCUMENTACAO_TECNICA.md` descreve o fluxo atual.
 
-## Matchmaking (find_matches) e escalabilidade
+## Matchmaking e escalabilidade
 
-- A função `find_matches` (00011/00013) continua a usar o JSONB `listings.items` por agora e é **calculada a pedido** (não persistida).
-- **Riscos de escalabilidade:** Com muitas ofertas, chamar `find_matches` em cada acesso pode ser pesado. Listar todos os itens na criação de oferta também; por isso foi adicionado **limite de 200 itens** em `getFilteredItems` e na carga inicial da página de criar oferta (`app/market/create`).
-- **Melhorias futuras:**
-  1. Refatorar `find_matches` para usar `listing_items` (JOIN por `item_id`).
-  2. Cache ou tabela persistente de matches (ex.: materializar resultados e atualizar por trigger ou job).
-  3. Se o catálogo de itens crescer muito, considerar paginação/cursor na listagem de itens (ex.: "carregar mais" ou busca obrigatória).
+- **find_matches / find_matches_for_user:** Já usam **`listing_items`** (migração 00020). São calculadas a pedido (não persistidas).
+- **Busca de itens:** `getFilteredItems` tem paginação e **Full Text Search** (coluna `items.name_tsv`, migração 00021) para escalar com muitos itens.
+- **Futuro:** Se o volume de matches crescer muito, considerar cache ou tabela materializada de matches.

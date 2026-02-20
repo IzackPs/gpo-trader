@@ -48,6 +48,9 @@ Guia em ordem: do projeto vazio até o site no ar. Siga os passos na sequência.
    - `00016_presence_rpc_and_pagination_fix.sql` → **Run**.
    - `00017_soft_deletes_isr_analytics.sql` → **Run**.
    - `00018_listing_items_wap_admin_disputes.sql` → **Run**.
+   - `00019_listing_items_source_of_truth.sql` → **Run** (listing_items como fonte de verdade; JSONB derivado).
+   - `00020_find_matches_use_listing_items.sql` → **Run** (matchmaking usa listing_items).
+   - `00021_items_full_text_search.sql` → **Run** (FTS na busca de itens).
 3. (Opcional) Abrir `supabase/seed.sql`, colar no SQL Editor e **Run** para popular itens iniciais.
 
 ### Passo 4 — Realtime
@@ -175,7 +178,7 @@ UPDATE public.profiles SET is_admin = true WHERE id = 'UUID_DO_TEU_USER';
 |---|--------|
 | 1 | Contas: Supabase, Vercel, Discord Dev |
 | 2 | Criar projeto Supabase e copiar URL + anon key |
-| 3 | Correr as 18 migrações no SQL Editor (por ordem) |
+| 3 | Correr as 21 migrações no SQL Editor (por ordem) |
 | 4 | Confirmar Realtime em `trade_messages` |
 | 5 | Criar app Discord e adicionar redirect `localhost` |
 | 6 | Supabase Auth: ativar Discord e URL `localhost` |

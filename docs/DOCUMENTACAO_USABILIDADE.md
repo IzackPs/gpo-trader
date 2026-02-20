@@ -65,8 +65,8 @@ Resumo rápido de limites de ofertas (podem variar consoante a configuração):
 ## 5. Ver o mercado
 
 - Em **Mercado** vês as ofertas recentes: quem **tem** (HAVE) e quem **quer** (WANT) itens.
-- Cada card mostra: utilizador, avatar, tier, se está online, itens da oferta e botão para ver detalhes ou aceitar.
-- A listagem é igual para todos (pública); atualiza-se automaticamente com cache de alguns segundos para ser rápida.
+- Cada card mostra: utilizador, avatar, tier, **se está online** (indicador em tempo real, sem recarregar a página), itens da oferta e botão para ver detalhes.
+- A listagem é pública e cacheada por alguns segundos. Após a primeira página, usa o botão **“Carregar mais ofertas”** para ver mais ofertas (paginação).
 
 ---
 
@@ -76,13 +76,16 @@ Resumo rápido de limites de ofertas (podem variar consoante a configuração):
 2. Escolhe o lado:
    - **Tenho (HAVE):** o que estás a oferecer.
    - **Quero (WANT):** o que procuras.
-3. Adiciona itens: pesquisa por nome e/ou categoria (Fruta, Arma, Scroll, Acessório) e escolhe quantidades. Só aparecem itens **ativos** no catálogo (itens desativados pelo admin não são listados).
+3. Adiciona itens: **pesquisa por nome** (busca rápida no servidor) e/ou **filtro por categoria** (Fruta, Arma, Scroll, Acessório). Podes usar **“Carregar mais”** na lista de itens se houver muitos. Só aparecem itens **ativos** no catálogo.
 4. Confirma e publica.
+
+**Limites:** Não podes criar mais do que **3 ofertas em 5 minutos** (proteção contra spam). Os limites por tier (ex.: Drifter 1 oferta ativa, Civilian 3, etc.) continuam a aplicar-se.
 
 Se aparecer erro:
 
 - **“Conta com menos de 30 dias”:** A plataforma usa a idade da tua conta Discord; não é possível contornar.
 - **“Máximo de ofertas atingido”:** Cancela uma oferta antiga ou sobe de tier.
+- **“Muitas ofertas criadas nos últimos minutos”:** Aguarda alguns minutos antes de criar outra oferta.
 - **“Strikes”:** Contacta um administrador se achas que foi engano; após muitos strikes a criação pode ficar bloqueada.
 - **“Um ou mais itens não existem ou estão desativados”:** O item foi removido do catálogo ou desativado; escolhe outro.
 
@@ -93,7 +96,7 @@ Se aparecer erro:
 1. No **Mercado**, abre o detalhe da oferta que te interessa.
 2. Clica em **“Aceitar oferta”**. A oferta fica **bloqueada** para outros e é criada uma **transação** entre ti (comprador) e o autor da oferta (vendedor).
 3. Entras na **Sala de troca** (`/trades/[id]`). Aqui:
-   - Podes usar o **chat** para combinar como fazer a troca no jogo (servidor, local, ordem dos itens).
+   - Podes usar o **chat** para combinar como fazer a troca no jogo (servidor, local, ordem dos itens). O chat tem um limite de **15 mensagens por minuto** por utilizador na mesma troca (evita spam).
    - Quando a troca física no GPO estiver feita, **ambos** devem marcar que confirmam (checkboxes/botões de confirmação).
 4. Quando **comprador e vendedor** confirmarem:
    - A transação passa a **CONFIRMED**.
@@ -164,7 +167,7 @@ Não há botão “apagar” item: apenas “Ativo” Sim/Não. Isto evita quebr
 | Ação | Onde | Notas |
 |------|------|--------|
 | Entrar | Login com Discord | Conta Discord com 30+ dias para criar ofertas |
-| Ver ofertas | Mercado | Público; listagem cacheada |
+| Ver ofertas | Mercado | Público; listagem cacheada; “Carregar mais ofertas” para paginação |
 | Ver preços da semana | Bolsa / Economia | Público; WAP por item |
 | Criar oferta | Criar oferta | Protegido; limites por tier e strikes |
 | Aceitar oferta | Detalhe da oferta | Cria transação e sala de troca |
@@ -176,4 +179,4 @@ Não há botão “apagar” item: apenas “Ativo” Sim/Não. Isto evita quebr
 
 ---
 
-*Este guia acompanha a Documentação Técnica (`docs/DOCUMENTACAO_TECNICA.md`). Para dúvidas sobre configuração, deploy ou implementação, use a documentação técnica.*
+*Este guia acompanha a Documentação Técnica (`docs/DOCUMENTACAO_TECNICA.md`). Última atualização: alinhado com rate limits, paginação no mercado, presença “online” em tempo real e busca de itens.*

@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import TradeChat from "@/components/TradeChat";
+import TradeChat from "@/components/trades/TradeChat";
 import { PageContainer } from "@/components/layout/page-container";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
