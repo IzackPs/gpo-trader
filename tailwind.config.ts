@@ -1,0 +1,23 @@
+import type { Config } from "tailwindcss";
+
+/**
+ * Tailwind v4 prioriza configuração via CSS (@theme em globals.css).
+ * Este arquivo mantém referência para fontes e futuras extensões.
+ * Cores e glass estão em app/globals.css (Deep Ocean theme).
+ */
+const config: Config = {
+  content: [
+    "./app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./components/**/*.{js,ts,jsx,tsx,mdx}",
+  ],
+  theme: {
+    extend: {
+      fontFamily: {
+        sans: ["var(--font-sans)", "ui-sans-serif", "system-ui", "sans-serif"],
+      },
+    },
+  },
+  plugins: [],
+};
+
+export default config;
