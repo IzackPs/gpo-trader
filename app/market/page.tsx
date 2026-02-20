@@ -1,5 +1,5 @@
 import { createClient } from "@/utils/supabase/server";
-import { ArrowRightLeft, PlusCircle } from "lucide-react";
+import { ArrowRightLeft, PlusCircle, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { PageContainer } from "@/components/layout/page-container";
 import { SectionHeader } from "@/components/layout/section-header";
@@ -8,6 +8,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ListingCard } from "@/components/market/listing-card";
 import { MarketClient } from "./market-client";
 import type { Listing } from "@/types";
+
+/** ISR: revalidar listagem a cada 15s para reduzir carga no Supabase e servir do CDN. */
+export const revalidate = 15;
 
 export default async function MarketPage() {
   const supabase = await createClient();
@@ -34,11 +37,18 @@ export default async function MarketPage() {
           title="Mercado global"
           description="Ofertas recentes de jogadores verificados."
           actions={
-            <Link href="/market/create">
-              <Button variant="primary" size="md" leftIcon={<PlusCircle size={20} />}>
-                Criar oferta
-              </Button>
-            </Link>
+            <div className="flex flex-wrap items-center gap-2">
+              <Link href="/market/analytics">
+                <Button variant="secondary" size="md" leftIcon={<TrendingUp size={18} />}>
+                  Bolsa / Economia
+                </Button>
+              </Link>
+              <Link href="/market/create">
+                <Button variant="primary" size="md" leftIcon={<PlusCircle size={20} />}>
+                  Criar oferta
+                </Button>
+              </Link>
+            </div>
           }
         />
 

@@ -32,6 +32,7 @@ export interface Item {
   icon_url: string | null;
   market_value_leg_chests: number;
   volatility: number;
+  is_active?: boolean;
 }
 
 export interface ListingItem {

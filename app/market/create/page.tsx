@@ -24,6 +24,7 @@ export default async function CreateListingPage() {
     supabase
       .from("items")
       .select("*")
+      .eq("is_active", true)
       .order("category", { ascending: true })
       .order("name", { ascending: true }),
     supabase

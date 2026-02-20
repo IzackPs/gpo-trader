@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { createClient } from "@/utils/supabase/client";
-import { Save, Loader2 } from "lucide-react";
+import { Save, Loader2, Power } from "lucide-react";
 import type { Item } from "@/types";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,7 @@ export function AdminItemsForm({ items }: AdminItemsFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [successId, setSuccessId] = useState<number | null>(null);
 
-  const [values, setValues] = useState<Record<number, { market_value_leg_chests: string; volatility: string }>>(
+  const [values, setValues] = useState<Record<number, { market_value_leg_chests: string; volatility: string; is_active: boolean }>>(
     () =>
       Object.fromEntries(
         items.map((i) => [
@@ -27,6 +27,7 @@ export function AdminItemsForm({ items }: AdminItemsFormProps) {
           {
             market_value_leg_chests: String(i.market_value_leg_chests),
             volatility: String(i.volatility ?? 0),
+            is_active: i.is_active !== false,
           },
         ])
       )
@@ -52,6 +53,7 @@ export function AdminItemsForm({ items }: AdminItemsFormProps) {
       .update({
         market_value_leg_chests: price,
         volatility: Number.isNaN(vol) ? 0 : vol,
+        is_active: values[item.id]?.is_active ?? true,
       })
       .eq("id", item.id);
 
@@ -75,7 +77,7 @@ export function AdminItemsForm({ items }: AdminItemsFormProps) {
         <CardHeader>
           <CardTitle className="text-base">Itens ({items.length})</CardTitle>
           <p className="text-sm text-slate-500">
-            Altere e clique em Salvar. Preço em Legendary Chests.
+            Altere e clique em Salvar. Preço em Legendary Chests. Desative itens em vez de apagar (soft delete).
           </p>
         </CardHeader>
         <CardContent>
@@ -87,6 +89,7 @@ export function AdminItemsForm({ items }: AdminItemsFormProps) {
                   <th className="pb-2 pr-4 font-semibold text-slate-300">Categoria</th>
                   <th className="pb-2 pr-4 font-semibold text-slate-300">Preço (Leg. Chests)</th>
                   <th className="pb-2 pr-4 font-semibold text-slate-300">Volatilidade</th>
+                  <th className="pb-2 pr-4 font-semibold text-slate-300">Ativo</th>
                   <th className="pb-2 font-semibold text-slate-300">Ação</th>
                 </tr>
               </thead>
@@ -130,6 +133,29 @@ export function AdminItemsForm({ items }: AdminItemsFormProps) {
                         }
                         className="w-20"
                       />
+                    </td>
+                    <td className="py-3 pr-4">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setValues((prev) => ({
+                            ...prev,
+                            [item.id]: {
+                              ...prev[item.id],
+                              is_active: !(prev[item.id]?.is_active !== false),
+                            },
+                          }))
+                        }
+                        className={`flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-medium transition-colors ${
+                          values[item.id]?.is_active !== false
+                            ? "bg-emerald-500/20 text-emerald-400"
+                            : "bg-slate-700 text-slate-500"
+                        }`}
+                        title={values[item.id]?.is_active !== false ? "Desativar item" : "Ativar item"}
+                      >
+                        <Power size={12} aria-hidden />
+                        {values[item.id]?.is_active !== false ? "Sim" : "Não"}
+                      </button>
                     </td>
                     <td className="py-3">
                       <Button

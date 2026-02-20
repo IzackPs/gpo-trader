@@ -23,6 +23,7 @@ export async function getFilteredItems(
   let query = supabase
     .from("items")
     .select("*")
+    .eq("is_active", true)
     .order("category", { ascending: true })
     .order("name", { ascending: true });
 
