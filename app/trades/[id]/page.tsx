@@ -48,6 +48,22 @@ export default async function TradeRoomPage({
     transaction.buyer_confirmed && transaction.seller_confirmed;
   const isDisputed = transaction.status === "DISPUTED";
 
+  const buyerAgreed = Boolean(transaction.buyer_agreed_items);
+  const sellerAgreed = Boolean(transaction.seller_agreed_items);
+  const itemsAgreed = buyerAgreed && sellerAgreed;
+  const myAgreed = isBuyer ? buyerAgreed : sellerAgreed;
+  const otherAgreed = isBuyer ? sellerAgreed : buyerAgreed;
+
+  async function agreeItems() {
+    "use server";
+    const sb = await createClient();
+    const update = isBuyer
+      ? { buyer_agreed_items: true }
+      : { seller_agreed_items: true };
+    await sb.from("transactions").update(update).eq("id", id);
+    redirect(`/trades/${id}`);
+  }
+
   async function confirmTrade() {
     "use server";
     const sb = await createClient();
@@ -67,7 +83,11 @@ export default async function TradeRoomPage({
   async function disputeTrade() {
     "use server";
     const sb = await createClient();
-    await sb.from("transactions").update({ status: "DISPUTED" }).eq("id", id);
+    const { error } = await sb.rpc("open_dispute", {
+      p_transaction_id: id,
+      p_reason: "Disputa acionada pela parte",
+    });
+    if (error) console.error("open_dispute:", error);
     redirect(`/trades/${id}`);
   }
 
@@ -172,7 +192,31 @@ export default async function TradeRoomPage({
           </Card>
         </div>
 
-        {!isComplete && !isDisputed && (
+        {!itemsAgreed && !isComplete && !isDisputed && (
+          <Card className="border-cyan-500/30 bg-cyan-950/20">
+            <CardContent className="space-y-4 p-6">
+              <h2 className="text-lg font-bold text-slate-50">
+                Acordar itens da troca
+              </h2>
+              <p className="text-sm text-slate-400">
+                Confirme que os itens da troca estão corretos. Depois que ambos confirmarem, o chat será liberado para combinar detalhes no jogo.
+              </p>
+              {myAgreed ? (
+                <p className="rounded-lg bg-cyan-500/20 px-4 py-2 text-sm text-cyan-300">
+                  Você já confirmou os itens. Aguardando a outra parte…
+                </p>
+              ) : (
+                <form action={agreeItems}>
+                  <Button type="submit" variant="primary" size="md">
+                    Confirmar itens
+                  </Button>
+                </form>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {itemsAgreed && !isComplete && !isDisputed && (
           <TradeChat transactionId={id} currentUserId={user.id} />
         )}
 
@@ -244,21 +288,31 @@ export default async function TradeRoomPage({
         )}
 
         {isDisputed && (
-          <Card className="border-amber-500/50 bg-amber-500/10">
-            <CardContent className="p-8 text-center">
-              <h2 className="text-xl font-bold text-amber-200">
-                Disputa em análise
-              </h2>
-              <p className="mt-2 text-sm text-slate-300">
-                Nenhuma reputação foi atribuída. Moderadores serão notificados.
-              </p>
-              <Link href="/market" className="mt-6 inline-block">
-                <Button variant="secondary" size="lg">
-                  Voltar ao mercado
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
+          <>
+            <Card className="border-amber-500/50 bg-amber-500/10">
+              <CardContent className="space-y-4 p-8 text-center">
+                <h2 className="text-xl font-bold text-amber-200">
+                  Disputa em análise
+                </h2>
+                <p className="text-sm text-slate-300">
+                  O chat foi bloqueado. Nenhuma reputação foi atribuída. Um caso foi aberto para a moderação.
+                </p>
+                <p className="text-sm text-slate-400">
+                  Você pode enviar prints ou provas em <strong>Disputa</strong> (em breve: upload de evidências).
+                </p>
+                <Link href={`/trades/${id}/dispute`} className="inline-block">
+                  <Button variant="outline" size="lg" className="border-amber-500/50 text-amber-400">
+                    Ver disputa e enviar provas
+                  </Button>
+                </Link>
+                <Link href="/market" className="mt-4 block">
+                  <Button variant="secondary" size="lg">
+                    Voltar ao mercado
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          </>
         )}
       </PageContainer>
     </main>

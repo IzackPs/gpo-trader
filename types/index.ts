@@ -61,10 +61,23 @@ export interface Transaction {
   status: TransactionStatus;
   buyer_confirmed: boolean;
   seller_confirmed: boolean;
+  buyer_agreed_items?: boolean;
+  seller_agreed_items?: boolean;
   created_at: string;
   updated_at?: string;
   buyer?: Profile;
   seller?: Profile;
+}
+
+export interface DisputeCase {
+  id: string;
+  transaction_id: string;
+  reported_by: string;
+  reason: string | null;
+  status: 'OPEN' | 'UNDER_REVIEW' | 'RESOLVED' | 'CLOSED';
+  admin_notes: string | null;
+  created_at: string;
+  updated_at?: string;
 }
 
 export interface ReputationEvent {

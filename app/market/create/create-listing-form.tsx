@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Check,
   PackagePlus,
@@ -16,6 +16,7 @@ import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { getFilteredItems } from "./actions";
 
 const CATEGORY_LABELS: Record<ItemCategory, string> = {
   FRUIT: "Frutas",
@@ -60,21 +61,36 @@ export function CreateListingForm({
   const [categoryFilter, setCategoryFilter] = useState<ItemCategory | "ALL">(
     "ALL"
   );
+  const [displayItems, setDisplayItems] = useState<Item[]>(items);
+  const [filterLoading, setFilterLoading] = useState(false);
 
   const atLimit = openListingsCount >= maxListings;
   const accountTooNew = accountAgeDays < 30;
   const blockedByStrikes = strikes >= MAX_STRIKES_BEFORE_BLOCK;
 
-  const filteredItems = useMemo(() => {
-    return items.filter((item) => {
-      const matchSearch =
-        !search.trim() ||
-        item.name.toLowerCase().includes(search.trim().toLowerCase());
-      const matchCategory =
-        categoryFilter === "ALL" || item.category === categoryFilter;
-      return matchSearch && matchCategory;
-    });
-  }, [items, search, categoryFilter]);
+  useEffect(() => {
+    setDisplayItems(items);
+  }, [items]);
+
+  const fetchFiltered = useCallback(async (s: string, cat: ItemCategory | "ALL") => {
+    setFilterLoading(true);
+    const result = await getFilteredItems(s || undefined, cat);
+    setDisplayItems(result);
+    setFilterLoading(false);
+  }, []);
+
+  useEffect(() => {
+    if (!search.trim() && categoryFilter === "ALL") {
+      setDisplayItems(items);
+      return;
+    }
+    const t = setTimeout(() => {
+      fetchFiltered(search, categoryFilter);
+    }, 300);
+    return () => clearTimeout(t);
+  }, [search, categoryFilter, fetchFiltered, items]);
+
+  const filteredItems = displayItems;
 
   const toggleItem = (id: number) => {
     setError(null);
@@ -149,9 +165,9 @@ export function CreateListingForm({
   const selectedItemsDetails = useMemo(
     () =>
       selectedItems
-        .map((id) => items.find((i) => i.id === id))
+        .map((id) => displayItems.find((i) => i.id === id) ?? items.find((i) => i.id === id))
         .filter(Boolean) as Item[],
-    [selectedItems, items]
+    [selectedItems, displayItems, items]
   );
 
   return (
@@ -318,7 +334,11 @@ export function CreateListingForm({
           </div>
         )}
 
-        {filteredItems.length === 0 ? (
+        {filterLoading ? (
+          <div className="rounded-xl border border-white/10 bg-slate-900/30 py-12 text-center">
+            <p className="text-slate-500">Buscando itens…</p>
+          </div>
+        ) : filteredItems.length === 0 ? (
           <div className="rounded-xl border border-white/10 bg-slate-900/30 py-12 text-center">
             <p className="text-slate-500">
               {search.trim() || categoryFilter !== "ALL"
