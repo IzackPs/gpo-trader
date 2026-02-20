@@ -15,6 +15,10 @@ function isProtectedPath(pathname: string): boolean {
 }
 
 export async function middleware(request: NextRequest) {
+  if (!isProtectedPath(request.nextUrl.pathname)) {
+    return NextResponse.next({ request });
+  }
+
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -38,13 +42,11 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (isProtectedPath(request.nextUrl.pathname)) {
-    if (!user) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/auth";
-      url.searchParams.set("redirect", request.nextUrl.pathname);
-      return NextResponse.redirect(url);
-    }
+  if (!user) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/auth";
+    url.searchParams.set("redirect", request.nextUrl.pathname);
+    return NextResponse.redirect(url);
   }
 
   return response;

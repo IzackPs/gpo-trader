@@ -18,20 +18,23 @@ serve(async (req) => {
   }
 
   try {
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-    // Verificar autenticação (opcional: usar service role key)
+    const cronSecret = Deno.env.get("CRON_SECRET");
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
+    const expectedAuth = cronSecret ? `Bearer ${cronSecret}` : null;
+
+    if (!expectedAuth || !authHeader || authHeader !== expectedAuth) {
       return new Response(
-        JSON.stringify({ error: "Missing authorization header" }),
+        JSON.stringify({ error: "Unauthorized: invalid or missing CRON_SECRET" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const { job } = await req.json();
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    const body = await req.json().catch(() => ({}));
+    const { job } = body;
 
     let result;
     switch (job) {
@@ -45,12 +48,19 @@ serve(async (req) => {
         break;
 
       case "expire-listings":
-        // Executar expiração de ofertas
         const { data: expireData, error: expireError } = await supabase.rpc(
           "expire_old_listings"
         );
         if (expireError) throw expireError;
         result = { success: true, job: "expire-listings", data: expireData };
+        break;
+
+      case "expire-pending-2h":
+        const { data: gc2hData, error: gc2hError } = await supabase.rpc(
+          "expire_pending_transactions_2h"
+        );
+        if (gc2hError) throw gc2hError;
+        result = { success: true, job: "expire-pending-2h", data: gc2hData };
         break;
 
       case "find-matches":
@@ -65,7 +75,7 @@ serve(async (req) => {
 
       default:
         return new Response(
-          JSON.stringify({ error: `Unknown job: ${job}` }),
+          JSON.stringify({ error: `Unknown job: ${job ?? "missing"}` }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
     }

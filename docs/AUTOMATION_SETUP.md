@@ -138,16 +138,23 @@ SELECT public.expire_counter_offers();
 ### Opção 2: Edge Function (Alternativa)
 Use a Edge Function em `supabase/functions/cron-jobs/`:
 
+**Segurança:** A função exige o header `Authorization: Bearer <CRON_SECRET>`. Defina o secret nas variáveis de ambiente da função (Supabase Dashboard → Edge Functions → cron-jobs → Settings → Secrets). Um token aleatório (ex.: `openssl rand -hex 32`) evita que terceiros executem os jobs (DDoS, consumo de quota).
+
 ```bash
 # Deploy da função
 supabase functions deploy cron-jobs
 
+# Definir secret (Dashboard ou CLI)
+# CRON_SECRET=seu_token_longo_aleatorio
+
 # Chamar via HTTP
 curl -X POST https://your-project.supabase.co/functions/v1/cron-jobs \
-  -H "Authorization: Bearer YOUR_ANON_KEY" \
+  -H "Authorization: Bearer SEU_CRON_SECRET" \
   -H "Content-Type: application/json" \
   -d '{"job": "transaction-timeout"}'
 ```
+
+**Jobs disponíveis:** `transaction-timeout`, `expire-listings`, `expire-pending-2h` (GC em 2h).
 
 ### Opção 3: pg_cron (Se disponível)
 ```sql

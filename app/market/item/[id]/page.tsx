@@ -8,6 +8,8 @@ import { Avatar } from "@/components/ui/avatar";
 import { RankBadge } from "@/components/ui/rank-badge";
 import type { RankTier } from "@/types";
 
+const ORDER_BOOK_PAGE_SIZE = 50;
+
 type Row = {
   item_id: number;
   item_name: string;
@@ -42,14 +44,27 @@ export default async function OrderBookItemPage({
 
   if (!item) return notFound();
 
-  const { data: rows } = await supabase
-    .from("order_book_by_item")
-    .select("*")
-    .eq("item_id", itemId);
+  const [asksRes, bidsRes] = await Promise.all([
+    supabase
+      .from("order_book_by_item")
+      .select("*")
+      .eq("item_id", itemId)
+      .eq("side", "HAVE")
+      .order("created_at", { ascending: false })
+      .limit(ORDER_BOOK_PAGE_SIZE),
+    supabase
+      .from("order_book_by_item")
+      .select("*")
+      .eq("item_id", itemId)
+      .eq("side", "WANT")
+      .order("created_at", { ascending: false })
+      .limit(ORDER_BOOK_PAGE_SIZE),
+  ]);
 
-  const orderRows = (rows ?? []) as Row[];
-  const asks = orderRows.filter((r) => r.side === "HAVE");
-  const bids = orderRows.filter((r) => r.side === "WANT");
+  const asks = (asksRes.data ?? []) as Row[];
+  const bids = (bidsRes.data ?? []) as Row[];
+  const hasMoreAsks = asks.length === ORDER_BOOK_PAGE_SIZE;
+  const hasMoreBids = bids.length === ORDER_BOOK_PAGE_SIZE;
 
   return (
     <main>
@@ -67,8 +82,10 @@ export default async function OrderBookItemPage({
             {item.name}
           </h1>
           <p className="mt-1 text-sm text-slate-500">
-            Livro de ofertas — quem tem (Asks) e quem quer (Bids)
+            Livro de ofertas — quem tem (Asks) e quem quer (Bids). Exibindo até{" "}
+            {ORDER_BOOK_PAGE_SIZE} por lado.
           </p>
+          {/* Escalabilidade futura: paginação (.range(offset, offset+limit)), "Carregar mais" ou infinite scroll; Supabase Realtime para novas ofertas sem recarregar. */}
         </div>
 
         <div className="grid gap-8 lg:grid-cols-2">
@@ -80,7 +97,12 @@ export default async function OrderBookItemPage({
               </h2>
               {asks.length === 0 ? (
                 <p className="text-sm text-slate-500">Nenhuma oferta de venda no momento.</p>
-              ) : (
+              ) : hasMoreAsks ? (
+                <p className="mb-2 text-xs text-slate-500">
+                  Mostrando as {ORDER_BOOK_PAGE_SIZE} mais recentes. Há mais ofertas disponíveis.
+                </p>
+              ) : null}
+              {asks.length > 0 ? (
                 <ul className="space-y-3">
                   {asks.map((r) => (
                     <li key={r.listing_id}>
@@ -102,7 +124,7 @@ export default async function OrderBookItemPage({
                     </li>
                   ))}
                 </ul>
-              )}
+              ) : null}
             </CardContent>
           </Card>
 
@@ -114,7 +136,12 @@ export default async function OrderBookItemPage({
               </h2>
               {bids.length === 0 ? (
                 <p className="text-sm text-slate-500">Nenhuma oferta de compra no momento.</p>
-              ) : (
+              ) : hasMoreBids ? (
+                <p className="mb-2 text-xs text-slate-500">
+                  Mostrando as {ORDER_BOOK_PAGE_SIZE} mais recentes. Há mais ofertas disponíveis.
+                </p>
+              ) : null}
+              {bids.length > 0 ? (
                 <ul className="space-y-3">
                   {bids.map((r) => (
                     <li key={r.listing_id}>
@@ -136,7 +163,7 @@ export default async function OrderBookItemPage({
                     </li>
                   ))}
                 </ul>
-              )}
+              ) : null}
             </CardContent>
           </Card>
         </div>
