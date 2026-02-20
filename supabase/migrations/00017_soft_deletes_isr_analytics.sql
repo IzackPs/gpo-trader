@@ -101,6 +101,9 @@ $$;
 
 
 -- 2. WEIGHTED AVERAGE PRICE (WAP) ÚLTIMA SEMANA — para painel de economia
+-- Dívida técnica: esta função usa jsonb_array_elements sobre listings.items (JSONB) por compatibilidade
+-- com dados antigos. Quando removeres a coluna JSONB e usares apenas listing_items (mig 09),
+-- refazer esta função com JOIN em listing_items em vez de parse JSONB reduzirá custo CPU em escala.
 CREATE OR REPLACE FUNCTION public.get_market_prices_last_week()
 RETURNS TABLE (
   item_id int,

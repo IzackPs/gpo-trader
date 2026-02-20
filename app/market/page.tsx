@@ -1,4 +1,4 @@
-import { createClient } from "@/utils/supabase/server";
+import { createClientPublic } from "@/utils/supabase/server";
 import { ArrowRightLeft, PlusCircle, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { PageContainer } from "@/components/layout/page-container";
@@ -13,7 +13,7 @@ import type { Listing } from "@/types";
 export const revalidate = 15;
 
 export default async function MarketPage() {
-  const supabase = await createClient();
+  const supabase = createClientPublic();
 
   const { data: rawListings, error } = await supabase
     .from("listings")

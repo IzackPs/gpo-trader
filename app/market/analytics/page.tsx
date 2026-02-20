@@ -1,11 +1,11 @@
-import { createClient } from "@/utils/supabase/server";
+import { createClientPublic } from "@/utils/supabase/server";
 import Link from "next/link";
 import { ArrowLeft, TrendingUp } from "lucide-react";
 import { PageContainer } from "@/components/layout/page-container";
 import { SectionHeader } from "@/components/layout/section-header";
 import { Card, CardContent } from "@/components/ui/card";
 
-/** Cache da bolsa: revalidar a cada 60s. */
+/** Cache da bolsa: revalidar a cada 60s. Dados vêm de createClientPublic() (sem cookies) para ISR efetivo. */
 export const revalidate = 60;
 
 export const metadata = {
@@ -23,7 +23,7 @@ type MarketPriceRow = {
 };
 
 export default async function MarketAnalyticsPage() {
-  const supabase = await createClient();
+  const supabase = createClientPublic();
   const { data: rows, error } = await supabase.rpc("get_market_prices_last_week");
 
   if (error) {
