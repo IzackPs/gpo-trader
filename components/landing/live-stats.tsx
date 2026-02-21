@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
+import { useLocale } from "@/contexts/LocaleContext";
+import { t } from "@/lib/i18n";
 
 const MOCK = {
   totalTrades: 1247,
@@ -10,6 +12,7 @@ const MOCK = {
 };
 
 export function LiveStats() {
+  const { locale } = useLocale();
   const [stats, setStats] = useState(MOCK);
   const [loaded, setLoaded] = useState(false);
 
@@ -53,11 +56,11 @@ export function LiveStats() {
   return (
     <section
       className="border-y border-white/10 bg-slate-950/60 py-6"
-      aria-label="Estatísticas ao vivo"
+      aria-label={locale === "en" ? "Live stats" : "Estatísticas ao vivo"}
     >
       <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-center gap-x-12 gap-y-4 px-4 sm:px-6">
         <div className="flex items-baseline gap-2">
-          <span className="text-slate-500">Total de Trocas:</span>
+          <span className="text-slate-500">{t(locale, "home.statsTrades")}:</span>
           <span
             className="text-2xl font-bold tabular-nums text-cyan-400"
             aria-live="polite"
@@ -66,7 +69,7 @@ export function LiveStats() {
           </span>
         </div>
         <div className="flex items-baseline gap-2">
-          <span className="text-slate-500">Volume Negociado:</span>
+          <span className="text-slate-500">{t(locale, "home.statsVolume")}:</span>
           <span
             className="text-2xl font-bold tabular-nums text-cyan-400"
             aria-live="polite"
@@ -76,7 +79,7 @@ export function LiveStats() {
           <span className="text-sm text-slate-500">leg chests</span>
         </div>
         <div className="flex items-baseline gap-2">
-          <span className="text-slate-500">Usuários Ativos:</span>
+          <span className="text-slate-500">{t(locale, "home.statsUsers")}:</span>
           <span
             className="text-2xl font-bold tabular-nums text-cyan-400"
             aria-live="polite"

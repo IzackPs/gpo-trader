@@ -1,9 +1,8 @@
 import { redirect } from "next/navigation";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import { createClient } from "@/utils/supabase/server";
 import { PageContainer } from "@/components/layout/page-container";
 import { CreateListingForm } from "./create-listing-form";
+import { CreatePageHeader } from "./create-page-header";
 import { TIER_LIMITS } from "@/types";
 import type { Item, RankTier } from "@/types";
 
@@ -61,30 +60,10 @@ export default async function CreateListingPage() {
   return (
     <main>
       <PageContainer maxWidth="lg" className="space-y-6">
-        <Link
-          href="/market"
-          className="inline-flex items-center gap-2 text-sm text-slate-400 transition-colors hover:text-slate-50 focus-visible:rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-500"
-        >
-          <ArrowLeft size={18} aria-hidden />
-          Voltar para o mercado
-        </Link>
-
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-50 sm:text-3xl">
-              Nova oferta
-            </h1>
-            <p className="mt-1 text-sm text-slate-500">
-              Escolha o tipo de oferta e os itens. Máximo 10 itens por oferta; quantidade de 1 a 30 por item.
-            </p>
-          </div>
-          <div className="flex items-center gap-2 text-sm text-slate-500">
-            <span>Ofertas ativas:</span>
-            <span className="font-medium tabular-nums text-slate-300">
-              {openListingsCount}/{maxListings}
-            </span>
-          </div>
-        </div>
+        <CreatePageHeader
+          openListingsCount={openListingsCount}
+          maxListings={maxListings}
+        />
 
         <CreateListingForm
           items={items}

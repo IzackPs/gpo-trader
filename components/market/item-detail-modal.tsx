@@ -3,14 +3,16 @@
 import { useEffect, useState } from "react";
 import { X, TrendingUp, Package, Coins } from "lucide-react";
 import { getItemWithMarketStats } from "@/app/market/actions";
+import { useLocale } from "@/contexts/LocaleContext";
+import { t } from "@/lib/i18n";
 import type { Item } from "@/types";
 import { ItemIcon } from "./item-icon";
 
-const CATEGORY_LABELS: Record<string, string> = {
-  FRUIT: "Fruta",
-  WEAPON: "Arma",
-  SCROLL: "Pergaminho",
-  ACCESSORY: "Acessório",
+const CATEGORY_LABELS: Record<string, { pt: string; en: string }> = {
+  FRUIT: { pt: "Fruta", en: "Fruit" },
+  WEAPON: { pt: "Arma", en: "Weapon" },
+  SCROLL: { pt: "Pergaminho", en: "Scroll" },
+  ACCESSORY: { pt: "Acessório", en: "Accessory" },
 };
 
 interface ItemDetailModalProps {
@@ -25,6 +27,7 @@ export function ItemDetailModal({
   onClose,
   itemId,
 }: ItemDetailModalProps) {
+  const { locale } = useLocale();
   const [item, setItem] = useState<Item | null>(null);
   const [marketStats, setMarketStats] = useState<{
     weighted_avg_price: number;
@@ -65,13 +68,13 @@ export function ItemDetailModal({
       >
         <div className="flex items-center justify-between border-b border-white/10 p-4">
           <h2 id="item-detail-title" className="text-lg font-semibold text-slate-50">
-            Detalhes do item
+            {t(locale, "itemDetail.title")}
           </h2>
           <button
             type="button"
             onClick={onClose}
             className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-white/10 hover:text-slate-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-500"
-            aria-label="Fechar"
+            aria-label={t(locale, "common.close")}
           >
             <X size={20} aria-hidden />
           </button>
@@ -81,7 +84,7 @@ export function ItemDetailModal({
           {loading ? (
             <div className="flex flex-col items-center justify-center py-12 text-slate-400">
               <div className="size-10 animate-pulse rounded-full bg-slate-700" />
-              <p className="mt-3 text-sm">A carregar…</p>
+              <p className="mt-3 text-sm">{t(locale, "itemDetail.loading")}</p>
             </div>
           ) : item ? (
             <div className="space-y-6">
@@ -96,7 +99,7 @@ export function ItemDetailModal({
                 <div className="min-w-0">
                   <p className="font-bold text-slate-50">{item.name}</p>
                   <p className="text-sm text-slate-400">
-                    {CATEGORY_LABELS[item.category] ?? item.category}
+                    {CATEGORY_LABELS[item.category]?.[locale] ?? item.category}
                   </p>
                 </div>
               </div>
@@ -107,7 +110,7 @@ export function ItemDetailModal({
                     <Coins size={18} aria-hidden />
                   </span>
                   <div>
-                    <p className="text-xs text-slate-500">Preço em Legendary Chests</p>
+                    <p className="text-xs text-slate-500">{t(locale, "itemDetail.priceLegChests")}</p>
                     <p className="font-mono font-semibold text-slate-100">
                       {item.market_value_leg_chests}
                     </p>
@@ -121,7 +124,7 @@ export function ItemDetailModal({
                         <TrendingUp size={18} aria-hidden />
                       </span>
                       <div>
-                        <p className="text-xs text-slate-500">Preço médio (WAP) — última semana</p>
+                        <p className="text-xs text-slate-500">{t(locale, "itemDetail.wapLastWeek")}</p>
                         <p className="font-mono font-semibold text-slate-100">
                           {marketStats.weighted_avg_price.toFixed(2)}
                         </p>
@@ -132,33 +135,33 @@ export function ItemDetailModal({
                         <Package size={18} aria-hidden />
                       </span>
                       <div>
-                        <p className="text-xs text-slate-500">Volume de mercado (última semana)</p>
+                        <p className="text-xs text-slate-500">{t(locale, "itemDetail.volumeLastWeek")}</p>
                         <p className="font-mono font-semibold text-slate-100">
                           {marketStats.total_volume.toFixed(2)}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center justify-between text-sm text-slate-400">
-                      <span>Trocas na última semana</span>
+                      <span>{t(locale, "itemDetail.tradesLastWeek")}</span>
                       <span className="font-mono text-slate-200">{marketStats.trade_count}</span>
                     </div>
                   </>
                 ) : (
                   <p className="text-sm text-slate-500">
-                    Ainda não há dados de mercado para este item na última semana.
+                    {t(locale, "itemDetail.noMarketData")}
                   </p>
                 )}
 
                 {typeof item.volatility === "number" && (
                   <div className="flex items-center justify-between border-t border-white/10 pt-3 text-sm">
-                    <span className="text-slate-500">Volatilidade</span>
+                    <span className="text-slate-500">{t(locale, "itemDetail.volatility")}</span>
                     <span className="font-mono text-slate-300">{item.volatility}</span>
                   </div>
                 )}
               </div>
             </div>
           ) : (
-            <p className="py-8 text-center text-slate-500">Item não encontrado.</p>
+            <p className="py-8 text-center text-slate-500">{t(locale, "itemDetail.itemNotFound")}</p>
           )}
         </div>
       </div>

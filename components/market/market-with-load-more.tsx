@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { getMarketListings } from "@/app/market/actions";
 import { MarketListingGrid } from "@/components/market/market-listing-grid";
+import { useLocale } from "@/contexts/LocaleContext";
+import { t } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import type { Listing } from "@/types";
-
-const LABEL_LOAD_MORE = "Carregar mais ofertas";
 
 export function MarketWithLoadMore({
   initialListings,
@@ -15,6 +15,7 @@ export function MarketWithLoadMore({
   initialListings: Listing[];
   initialHasMore: boolean;
 }) {
+  const { locale } = useLocale();
   const [listings, setListings] = useState<Listing[]>(initialListings);
   const [hasMore, setHasMore] = useState(initialHasMore);
   const [loading, setLoading] = useState(false);
@@ -40,7 +41,7 @@ export function MarketWithLoadMore({
             disabled={loading}
             aria-busy={loading}
           >
-            {loading ? "A carregar…" : LABEL_LOAD_MORE}
+            {loading ? t(locale, "common.loading") : t(locale, "market.loadMore")}
           </Button>
         </div>
       )}

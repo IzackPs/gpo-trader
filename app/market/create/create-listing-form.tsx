@@ -22,16 +22,18 @@ import { ItemDetailModal } from "@/components/market/item-detail-modal";
 import { ItemIcon } from "@/components/market/item-icon";
 import type { SelectedItem } from "./actions";
 import { getFilteredItems, createListing } from "./actions";
+import { useLocale } from "@/contexts/LocaleContext";
+import { t } from "@/lib/i18n";
 
 const MAX_ITEMS_PER_LISTING = 10;
 const MAX_QTY = 30;
 const MIN_QTY = 1;
 
-const CATEGORY_LABELS: Record<ItemCategory, string> = {
-  FRUIT: "Frutas",
-  WEAPON: "Armas",
-  SCROLL: "Pergaminhos",
-  ACCESSORY: "Acessórios",
+const CATEGORY_LABELS: Record<ItemCategory, { pt: string; en: string }> = {
+  FRUIT: { pt: "Frutas", en: "Fruits" },
+  WEAPON: { pt: "Armas", en: "Weapons" },
+  SCROLL: { pt: "Pergaminhos", en: "Scrolls" },
+  ACCESSORY: { pt: "Acessórios", en: "Accessories" },
 };
 
 const CATEGORIES: ItemCategory[] = [
@@ -59,6 +61,7 @@ export function CreateListingForm({
   maxListings,
 }: CreateListingFormProps) {
   const router = useRouter();
+  const { locale } = useLocale();
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -125,7 +128,7 @@ export function CreateListingForm({
       setSelectedItems((prev) => prev.filter((s) => s.item_id !== id));
     } else {
       if (selectedItems.length >= MAX_ITEMS_PER_LISTING) {
-        setError(`Máximo de ${MAX_ITEMS_PER_LISTING} itens por oferta.`);
+        setError(t(locale, "create.maxItemsError"));
         return;
       }
       setSelectedItems((prev) => [...prev, { item_id: id, qty: 1 }]);
@@ -157,25 +160,21 @@ export function CreateListingForm({
   const handleSubmit = async () => {
     setError(null);
     if (selectedItems.length === 0) {
-      setError("Selecione pelo menos 1 item.");
+      setError(t(locale, "errors.selectOneItem"));
       return;
     }
 
     // Validações do cliente (UX) - mas o banco também valida
     if (blockedByStrikes) {
-      setError(`Sua conta está bloqueada para criar ofertas (strikes: ${strikes}).`);
+      setError(t(locale, "errors.accountBlocked", { count: strikes }));
       return;
     }
     if (accountTooNew) {
-      setError(
-        `Conta Discord muito nova. É necessário ter pelo menos 30 dias de conta para criar ofertas (anti-Sybil).`
-      );
+      setError(t(locale, "errors.accountTooNew"));
       return;
     }
     if (atLimit) {
-      setError(
-        `Limite de ofertas ativas atingido (${maxListings} para seu tier). Cancele uma oferta ou suba de nível.`
-      );
+      setError(t(locale, "errors.atLimit", { max: maxListings }));
       return;
     }
 
@@ -205,10 +204,11 @@ export function CreateListingForm({
         <Alert variant="error" className="flex gap-3">
           <AlertCircle className="mt-0.5 size-5 shrink-0" aria-hidden />
           <div>
-            <p className="font-medium">Conta bloqueada para criar ofertas</p>
+            <p className="font-medium">{t(locale, "create.alertBlockedTitle")}</p>
             <p>
-              Sua conta acumulou {strikes} strike(s). Após {MAX_STRIKES_BEFORE_BLOCK} strikes,
-              não é possível criar novas ofertas. Entre em contato com a moderação.
+              {locale === "en"
+                ? `Your account has ${strikes} strike(s). After ${MAX_STRIKES_BEFORE_BLOCK} strikes, you cannot create new offers. Contact moderation.`
+                : `Sua conta acumulou ${strikes} strike(s). Após ${MAX_STRIKES_BEFORE_BLOCK} strikes, não é possível criar novas ofertas. Entre em contato com a moderação.`}
             </p>
           </div>
         </Alert>
@@ -218,10 +218,11 @@ export function CreateListingForm({
         <Alert variant="warning" className="flex gap-3">
           <AlertCircle className="mt-0.5 size-5 shrink-0" aria-hidden />
           <div>
-            <p className="font-medium">Conta Discord muito nova</p>
+            <p className="font-medium">{t(locale, "create.alertTooNewTitle")}</p>
             <p>
-              Para evitar abusos, só é possível criar ofertas com contas com
-              pelo menos 30 dias. Sua conta tem {accountAgeDays} dia(s).
+              {locale === "en"
+                ? `To prevent abuse, only accounts with at least 30 days can create offers. Your account has ${accountAgeDays} day(s).`
+                : `Para evitar abusos, só é possível criar ofertas com contas com pelo menos 30 dias. Sua conta tem ${accountAgeDays} dia(s).`}
             </p>
           </div>
         </Alert>
@@ -231,11 +232,11 @@ export function CreateListingForm({
         <Alert variant="warning" className="flex gap-3">
           <AlertCircle className="mt-0.5 size-5 shrink-0" aria-hidden />
           <div>
-            <p className="font-medium">Limite de ofertas ativas atingido</p>
+            <p className="font-medium">{t(locale, "create.alertAtLimitTitle")}</p>
             <p>
-              Seu tier ({rankTier}) permite no máximo {maxListings} oferta(s)
-              aberta(s). Cancele uma oferta no mercado ou complete trocas para
-              subir de nível.
+              {locale === "en"
+                ? `Your tier (${rankTier}) allows up to ${maxListings} open offer(s). Cancel an offer on the market or complete trades to level up.`
+                : `Seu tier (${rankTier}) permite no máximo ${maxListings} oferta(s) aberta(s). Cancele uma oferta no mercado ou complete trocas para subir de nível.`}
             </p>
           </div>
         </Alert>
@@ -247,11 +248,10 @@ export function CreateListingForm({
         </Alert>
       )}
 
-      {/* Tipo de oferta */}
       <Card className="glass border-white/10">
         <CardContent className="p-4 sm:p-5">
           <p className="mb-3 text-sm font-medium text-slate-300">
-            Tipo de oferta
+            {t(locale, "create.typeLabel")}
           </p>
           <div className="grid grid-cols-2 gap-3">
             <button
@@ -264,7 +264,7 @@ export function CreateListingForm({
               }`}
               aria-pressed={side === "HAVE"}
             >
-              Eu tenho (Vender)
+              {t(locale, "create.have")}
             </button>
             <button
               type="button"
@@ -276,7 +276,7 @@ export function CreateListingForm({
               }`}
               aria-pressed={side === "WANT"}
             >
-              Eu quero (Comprar)
+              {t(locale, "create.want")}
             </button>
           </div>
         </CardContent>
@@ -289,7 +289,7 @@ export function CreateListingForm({
             id="items-heading"
             className="text-base font-medium text-slate-300"
           >
-            Selecione os itens
+            {t(locale, "create.selectItems")}
           </h2>
           <div className="flex flex-wrap items-center gap-2">
             <div className="relative flex-1 sm:w-56">
@@ -299,7 +299,7 @@ export function CreateListingForm({
               />
               <Input
                 type="search"
-                placeholder="Buscar por nome..."
+                placeholder={t(locale, "create.searchPlaceholder")}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-9"
@@ -317,7 +317,7 @@ export function CreateListingForm({
                 }`}
                 aria-pressed={categoryFilter === "ALL"}
               >
-                Todos
+                {t(locale, "create.allCategories")}
               </button>
               {CATEGORIES.map((cat) => (
                 <button
@@ -331,7 +331,7 @@ export function CreateListingForm({
                   }`}
                   aria-pressed={categoryFilter === cat}
                 >
-                  {CATEGORY_LABELS[cat]}
+                  {CATEGORY_LABELS[cat][locale]}
                 </button>
               ))}
             </div>
@@ -342,7 +342,7 @@ export function CreateListingForm({
         {selectedItems.length > 0 && (
           <div className="glass flex flex-wrap items-center gap-3 rounded-xl border border-white/10 p-3">
             <span className="text-xs font-medium text-slate-500 w-full sm:w-auto">
-              Selecionados ({selectedItems.length}/{MAX_ITEMS_PER_LISTING}) — quantidade máx. {MAX_QTY} por item:
+              {t(locale, "create.selected")} ({selectedItems.length}/{MAX_ITEMS_PER_LISTING}) — {t(locale, "create.maxPerItem")}:
             </span>
             {selectedItemsDetails.map((item) => (
               <div
@@ -395,14 +395,14 @@ export function CreateListingForm({
 
         {filterLoading ? (
           <div className="rounded-xl border border-white/10 bg-slate-900/30 py-12 text-center">
-            <p className="text-slate-500">Buscando itens…</p>
+            <p className="text-slate-500">{t(locale, "create.searching")}</p>
           </div>
         ) : filteredItems.length === 0 ? (
           <div className="rounded-xl border border-white/10 bg-slate-900/30 py-12 text-center">
             <p className="text-slate-500">
               {search.trim() || categoryFilter !== "ALL"
-                ? "Nenhum item encontrado com esses filtros."
-                : "Nenhum item cadastrado."}
+                ? t(locale, "create.noResults")
+                : t(locale, "create.noItems")}
             </p>
             {(search.trim() || categoryFilter !== "ALL") && (
               <button
@@ -413,7 +413,7 @@ export function CreateListingForm({
                 }}
                 className="mt-2 text-sm text-cyan-400 hover:underline"
               >
-                Limpar filtros
+                {t(locale, "create.clearFilters")}
               </button>
             )}
           </div>
@@ -459,8 +459,8 @@ export function CreateListingForm({
                       setDetailOpen(true);
                     }}
                     className="absolute left-2 top-2 flex size-6 items-center justify-center rounded-full bg-slate-700/80 text-slate-400 hover:bg-slate-600 hover:text-slate-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-500"
-                    aria-label={`Ver detalhes de ${item.name}`}
-                    title="Ver detalhes do item"
+                    aria-label={`${t(locale, "create.viewDetails")}: ${item.name}`}
+                    title={t(locale, "create.viewDetails")}
                   >
                     <Info size={12} aria-hidden />
                   </button>
@@ -491,7 +491,7 @@ export function CreateListingForm({
                 disabled={filterLoading || loadingMore}
                 onClick={loadMore}
               >
-                {loadingMore ? "A carregar…" : "Carregar mais"}
+                {loadingMore ? t(locale, "create.loadingMore") : t(locale, "create.loadMore")}
               </Button>
             </div>
           )}
@@ -509,7 +509,7 @@ export function CreateListingForm({
           disabled={selectedItems.length === 0 || atLimit || accountTooNew || blockedByStrikes || selectedItems.some((s) => s.qty < MIN_QTY || s.qty > MAX_QTY)}
           onClick={handleSubmit}
         >
-          {submitting ? "Publicando…" : "Publicar oferta"}
+          {submitting ? t(locale, "create.publishing") : t(locale, "create.publish")}
         </Button>
       </div>
 

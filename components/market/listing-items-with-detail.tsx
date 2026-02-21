@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { Info } from "lucide-react";
+import { useLocale } from "@/contexts/LocaleContext";
+import { t } from "@/lib/i18n";
 import { ItemDetailModal } from "./item-detail-modal";
 import { ItemIcon } from "./item-icon";
 
@@ -25,12 +27,13 @@ export function ListingItemsWithDetail({
   entries,
   itemsDetails,
 }: ListingItemsWithDetailProps) {
+  const { locale } = useLocale();
   const [detailOpen, setDetailOpen] = useState(false);
   const [detailItemId, setDetailItemId] = useState<number | null>(null);
 
   if (entries.length === 0) {
     return (
-      <p className="py-4 text-center text-slate-500">Nenhum item nesta oferta.</p>
+      <p className="py-4 text-center text-slate-500">{t(locale, "listingDetail.noItems")}</p>
     );
   }
 
@@ -62,7 +65,7 @@ export function ListingItemsWithDetail({
                     <span className="text-amber-400/90">
                       {item?.name ?? "Item"}{" "}
                       <span className="rounded bg-amber-500/20 px-1.5 py-0.5 text-xs font-normal text-amber-300">
-                        [Descontinuado]
+                        {t(locale, "listingDetail.discontinued")}
                       </span>
                     </span>
                   ) : (
@@ -88,8 +91,8 @@ export function ListingItemsWithDetail({
                       setDetailOpen(true);
                     }}
                     className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-white/10 hover:text-cyan-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-500"
-                    aria-label={`Ver detalhes de ${item?.name ?? "item"}`}
-                    title="Ver detalhes do item"
+                    aria-label={`${locale === "en" ? "View details for" : "Ver detalhes de"} ${item?.name ?? "item"}`}
+                    title={locale === "en" ? "View item details" : "Ver detalhes do item"}
                   >
                     <Info size={18} aria-hidden />
                   </button>
