@@ -19,7 +19,7 @@ export function AdminItemsForm({ items }: AdminItemsFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [successId, setSuccessId] = useState<number | null>(null);
 
-  const [values, setValues] = useState<Record<number, { market_value_leg_chests: string; volatility: string; is_active: boolean }>>(
+  const [values, setValues] = useState<Record<number, { market_value_leg_chests: string; volatility: string; icon_url: string; is_active: boolean }>>(
     () =>
       Object.fromEntries(
         items.map((i) => [
@@ -27,6 +27,7 @@ export function AdminItemsForm({ items }: AdminItemsFormProps) {
           {
             market_value_leg_chests: String(i.market_value_leg_chests),
             volatility: String(i.volatility ?? 0),
+            icon_url: i.icon_url ?? "",
             is_active: i.is_active !== false,
           },
         ])
@@ -48,11 +49,14 @@ export function AdminItemsForm({ items }: AdminItemsFormProps) {
       return;
     }
 
+    const iconUrl = (values[item.id]?.icon_url ?? "").trim() || null;
+
     const { error: err } = await supabase
       .from("items")
       .update({
         market_value_leg_chests: price,
         volatility: Number.isNaN(vol) ? 0 : vol,
+        icon_url: iconUrl,
         is_active: values[item.id]?.is_active ?? true,
       })
       .eq("id", item.id);
@@ -87,6 +91,7 @@ export function AdminItemsForm({ items }: AdminItemsFormProps) {
                 <tr className="border-b border-slate-700">
                   <th className="pb-2 pr-4 font-semibold text-slate-300">Nome</th>
                   <th className="pb-2 pr-4 font-semibold text-slate-300">Categoria</th>
+                  <th className="pb-2 pr-4 font-semibold text-slate-300">Ícone (URL)</th>
                   <th className="pb-2 pr-4 font-semibold text-slate-300">Preço (Leg. Chests)</th>
                   <th className="pb-2 pr-4 font-semibold text-slate-300">Volatilidade</th>
                   <th className="pb-2 pr-4 font-semibold text-slate-300">Ativo</th>
@@ -98,6 +103,23 @@ export function AdminItemsForm({ items }: AdminItemsFormProps) {
                   <tr key={item.id} className="border-b border-slate-800">
                     <td className="py-3 pr-4 font-medium text-slate-100">{item.name}</td>
                     <td className="py-3 pr-4 text-slate-400">{item.category}</td>
+                    <td className="py-3 pr-4">
+                      <Input
+                        type="url"
+                        placeholder="https://..."
+                        value={values[item.id]?.icon_url ?? ""}
+                        onChange={(e) =>
+                          setValues((prev) => ({
+                            ...prev,
+                            [item.id]: {
+                              ...prev[item.id],
+                              icon_url: e.target.value,
+                            },
+                          }))
+                        }
+                        className="min-w-[140px] max-w-[200px]"
+                      />
+                    </td>
                     <td className="py-3 pr-4">
                       <Input
                         type="number"

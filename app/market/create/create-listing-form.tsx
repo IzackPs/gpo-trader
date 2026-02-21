@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Check,
+  Info,
   PackagePlus,
   AlertCircle,
   Search,
@@ -15,6 +16,8 @@ import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { ItemDetailModal } from "@/components/market/item-detail-modal";
+import { ItemIcon } from "@/components/market/item-icon";
 import { getFilteredItems, createListing } from "./actions";
 
 const CATEGORY_LABELS: Record<ItemCategory, string> = {
@@ -63,6 +66,8 @@ export function CreateListingForm({
   const [hasMore, setHasMore] = useState(items.length >= 50);
   const [filterLoading, setFilterLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [detailItemId, setDetailItemId] = useState<number | null>(null);
 
   const atLimit = openListingsCount >= maxListings;
   const accountTooNew = accountAgeDays < 30;
@@ -318,6 +323,7 @@ export function CreateListingForm({
                 key={item.id}
                 className="inline-flex items-center gap-1.5 rounded-lg bg-cyan-500/20 px-2.5 py-1.5 text-sm font-medium text-cyan-200"
               >
+                <ItemIcon iconUrl={item.icon_url} category={item.category} name={item.name} size="sm" className="shrink-0" />
                 {item.name}
                 <button
                   type="button"
@@ -362,11 +368,18 @@ export function CreateListingForm({
             {filteredItems.map((item) => {
               const isSelected = selectedItems.includes(item.id);
               return (
-                <button
+                <div
                   key={item.id}
-                  type="button"
+                  role="button"
+                  tabIndex={0}
                   onClick={() => toggleItem(item.id)}
-                  className={`relative flex aspect-square flex-col items-center justify-center gap-2 rounded-xl border-2 p-3 transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-500 ${
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      toggleItem(item.id);
+                    }
+                  }}
+                  className={`relative flex aspect-square flex-col items-center justify-center gap-2 rounded-xl border-2 p-3 transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-500 cursor-pointer ${
                     isSelected
                       ? "border-cyan-500 bg-cyan-500/10 shadow-[0_0_20px_rgba(6,182,212,0.2)]"
                       : "border-slate-700/80 bg-slate-900/50 hover:border-slate-600 hover:bg-slate-800/50"
@@ -383,20 +396,26 @@ export function CreateListingForm({
                       />
                     </span>
                   )}
-                  <span
-                    className={`flex size-11 items-center justify-center rounded-xl text-2xl ${
-                      isSelected ? "bg-cyan-500/20" : "bg-slate-800"
-                    }`}
-                    aria-hidden
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setDetailItemId(item.id);
+                      setDetailOpen(true);
+                    }}
+                    className="absolute left-2 top-2 flex size-6 items-center justify-center rounded-full bg-slate-700/80 text-slate-400 hover:bg-slate-600 hover:text-slate-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-500"
+                    aria-label={`Ver detalhes de ${item.name}`}
+                    title="Ver detalhes do item"
                   >
-                    {item.category === "FRUIT"
-                      ? "🍎"
-                      : item.category === "WEAPON"
-                        ? "⚔️"
-                        : item.category === "SCROLL"
-                          ? "📜"
-                          : "💎"}
-                  </span>
+                    <Info size={12} aria-hidden />
+                  </button>
+                  <ItemIcon
+                    iconUrl={item.icon_url}
+                    category={item.category}
+                    name={item.name}
+                    size="md"
+                    className={isSelected ? "bg-cyan-500/20" : ""}
+                  />
                   <span
                     className={`line-clamp-2 text-center text-xs font-medium leading-tight ${
                       isSelected ? "text-slate-50" : "text-slate-400"
@@ -404,7 +423,7 @@ export function CreateListingForm({
                   >
                     {item.name}
                   </span>
-                </button>
+                </div>
               );
             })}
           </div>
@@ -438,6 +457,12 @@ export function CreateListingForm({
           {submitting ? "Publicando…" : "Publicar oferta"}
         </Button>
       </div>
+
+      <ItemDetailModal
+        open={detailOpen}
+        onClose={() => { setDetailOpen(false); setDetailItemId(null); }}
+        itemId={detailItemId}
+      />
     </div>
   );
 }

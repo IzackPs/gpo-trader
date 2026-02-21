@@ -1,7 +1,58 @@
 "use server";
 
 import { createClientPublic } from "@/utils/supabase/server";
-import type { Listing } from "@/types";
+import type { Item, Listing } from "@/types";
+
+export type ItemMarketStats = {
+  weighted_avg_price: number;
+  total_volume: number;
+  trade_count: number;
+};
+
+export type GetItemWithMarketStatsResult = {
+  item: Item | null;
+  marketStats: ItemMarketStats | null;
+};
+
+/**
+ * Retorna um item por ID e suas estatísticas de mercado (WAP, volume, trocas) da última semana.
+ * Usado no submenu de detalhes do item.
+ */
+export async function getItemWithMarketStats(
+  itemId: number
+): Promise<GetItemWithMarketStatsResult> {
+  const supabase = createClientPublic();
+
+  const { data: item, error: itemError } = await supabase
+    .from("items")
+    .select("*")
+    .eq("id", itemId)
+    .single();
+
+  if (itemError || !item) {
+    return { item: null, marketStats: null };
+  }
+
+  const { data: rows } = await supabase.rpc("get_market_prices_last_week");
+  const prices = (rows ?? []) as Array<{
+    item_id: number;
+    weighted_avg_price: number;
+    total_volume: number;
+    trade_count: number;
+  }>;
+  const marketRow = prices.find((r) => r.item_id === itemId) ?? null;
+
+  return {
+    item: item as Item,
+    marketStats: marketRow
+      ? {
+          weighted_avg_price: marketRow.weighted_avg_price,
+          total_volume: marketRow.total_volume,
+          trade_count: marketRow.trade_count,
+        }
+      : null,
+  };
+}
 
 const MARKET_PAGE_SIZE = 24;
 
