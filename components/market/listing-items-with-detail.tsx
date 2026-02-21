@@ -68,13 +68,18 @@ export function ListingItemsWithDetail({
                   ) : (
                     item?.name
                   )}
+                  {(entry.qty ?? 1) > 1 && (
+                    <span className="ml-1.5 font-normal text-slate-400">× {entry.qty}</span>
+                  )}
                 </h3>
                 <p className="text-xs text-slate-400">{item?.category ?? "—"}</p>
               </div>
               {!discontinued && (
                 <div className="flex items-center gap-2">
                   <p className="text-sm font-mono text-emerald-400">
-                    {item?.market_value_leg_chests} 💎
+                    {item?.market_value_leg_chests != null && (entry.qty ?? 1) > 1
+                      ? `${(item.market_value_leg_chests * (entry.qty ?? 1)).toFixed(0)} 💎`
+                      : `${item?.market_value_leg_chests} 💎`}
                   </p>
                   <button
                     type="button"

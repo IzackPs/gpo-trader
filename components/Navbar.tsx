@@ -2,9 +2,12 @@
 
 import { createClient } from "@/utils/supabase/client";
 import type { User } from "@supabase/supabase-js";
-import { LogIn, LayoutDashboard, PlusCircle, LogOut, Shield, ShieldCheck, Package, Scale } from "lucide-react";
+import { LogIn, LayoutDashboard, PlusCircle, LogOut, Shield, ShieldCheck, Package, Scale, Calculator, Sun, Moon, Languages } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useTheme } from "@/contexts/ThemeContext";
+import { useLocale } from "@/contexts/LocaleContext";
+import { t } from "@/lib/i18n";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,6 +33,9 @@ export default function Navbar({ initialUser = null, initialProfile = null }: Na
   const [profile, setProfile] = useState<NavbarProfile | null>(initialProfile ?? null);
   const loading = false;
   const supabase = createClient();
+  const { theme, toggleTheme } = useTheme();
+  const { locale, setLocale } = useLocale();
+  const isEn = locale === "en";
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
@@ -72,7 +78,7 @@ export default function Navbar({ initialUser = null, initialProfile = null }: Na
       >
         <Link
           href="/"
-          className="shrink-0 rounded-full font-bold tracking-tight text-slate-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-500"
+          className="shrink-0 rounded-full font-bold tracking-tight text-theme-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-500"
         >
           <span className="hidden sm:inline">GPO Trader</span>
           <span className="sm:hidden">GPO</span>
@@ -81,7 +87,38 @@ export default function Navbar({ initialUser = null, initialProfile = null }: Na
         <div className="flex min-w-0 flex-1 items-center justify-end gap-2 sm:gap-3">
           {loading ? (
             <NavbarSkeleton />
-          ) : user ? (
+          ) : (
+            <>
+              <div className="flex shrink-0 items-center gap-1 rounded-full border border-theme-subtle bg-theme-elevated/80 p-1">
+                <button
+                  type="button"
+                  onClick={toggleTheme}
+                  className="rounded-full p-1.5 text-theme-secondary transition-colors hover:bg-theme-card hover:text-theme-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-500"
+                  aria-label={theme === "dark" ? t(locale, "nav.light") : t(locale, "nav.dark")}
+                  title={theme === "dark" ? t(locale, "nav.light") : t(locale, "nav.dark")}
+                >
+                  {theme === "dark" ? <Sun size={16} aria-hidden /> : <Moon size={16} aria-hidden />}
+                </button>
+                <span className="text-theme-muted text-xs">|</span>
+                <button
+                  type="button"
+                  onClick={() => setLocale(isEn ? "pt" : "en")}
+                  className="rounded-full px-2 py-1 text-xs font-medium text-theme-secondary transition-colors hover:bg-theme-card hover:text-theme-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-500"
+                  aria-label={t(locale, "nav.language")}
+                  title={t(locale, "nav.language")}
+                >
+                  {isEn ? "PT" : "EN"}
+                </button>
+              </div>
+              <Link
+                href="/calculator"
+                className="flex shrink-0 items-center gap-2 rounded-full border border-theme-subtle bg-theme-elevated/80 px-3 py-2 text-sm font-medium text-theme-secondary transition-colors hover:bg-theme-card hover:text-theme-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-500"
+                aria-label={t(locale, "nav.calculator")}
+              >
+                <Calculator size={18} aria-hidden />
+                <span className="hidden sm:inline">{t(locale, "nav.calculator")}</span>
+              </Link>
+              {user ? (
             <>
               {profile?.is_admin === true && (
                 <DropdownMenu>
@@ -90,14 +127,14 @@ export default function Navbar({ initialUser = null, initialProfile = null }: Na
                     aria-label="Menu Admin"
                   >
                     <ShieldCheck size={18} aria-hidden />
-                    <span className="hidden sm:inline">Admin</span>
+                    <span className="hidden sm:inline">{t(locale, "nav.admin")}</span>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="min-w-44">
                     <DropdownMenuItem href="/admin/items" icon={<Package size={16} className="shrink-0" />}>
-                      Preços dos itens
+                      {t(locale, "nav.adminItems")}
                     </DropdownMenuItem>
                     <DropdownMenuItem href="/admin/disputes" icon={<Scale size={16} className="shrink-0" />}>
-                      Disputas
+                      {t(locale, "nav.disputes")}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -108,7 +145,7 @@ export default function Navbar({ initialUser = null, initialProfile = null }: Na
               >
                 <Shield size={12} aria-hidden />
                 <span className="tabular-nums">{Math.round(rep)}</span>
-                <span className="hidden md:inline">REP</span>
+                <span className="hidden md:inline">{t(locale, "nav.rep")}</span>
               </span>
               <DropdownMenu>
                 <DropdownMenuTrigger
@@ -123,19 +160,19 @@ export default function Navbar({ initialUser = null, initialProfile = null }: Na
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="min-w-44">
                   <DropdownMenuItem href="/dashboard" icon={<LayoutDashboard size={16} className="shrink-0" />}>
-                    Dashboard
+                    {t(locale, "nav.dashboard")}
                   </DropdownMenuItem>
                   <DropdownMenuItem href="/market/create" icon={<PlusCircle size={16} className="shrink-0" />}>
-                    Nova oferta
+                    {t(locale, "nav.newOffer")}
                   </DropdownMenuItem>
                   <div className="my-1 border-t border-white/10" role="separator" />
                   <DropdownMenuItem onClick={handleLogout} icon={<LogOut size={16} className="shrink-0" />}>
-                    Sair
+                    {t(locale, "nav.logout")}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </>
-          ) : (
+              ) : (
             <Button
               variant="primary"
               size="md"
@@ -143,9 +180,11 @@ export default function Navbar({ initialUser = null, initialProfile = null }: Na
               className="bg-[#5865F2] hover:bg-[#4752C4] focus-visible:ring-cyan-400"
               leftIcon={<LogIn size={18} aria-hidden />}
             >
-              <span className="hidden sm:inline">Login com Discord</span>
-              <span className="sm:hidden">Entrar</span>
+              <span className="hidden sm:inline">{t(locale, "nav.login")}</span>
+              <span className="sm:hidden">{t(locale, "nav.loginShort")}</span>
             </Button>
+              )}
+            </>
           )}
         </div>
       </nav>

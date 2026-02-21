@@ -66,19 +66,33 @@ export async function getFilteredItems(
 
 export type CreateListingResult = { error?: string; listingId?: string };
 
+/** Item selecionado com quantidade (1–30). Máximo 10 itens por oferta. */
+export type SelectedItem = { item_id: number; qty: number };
+
+const MAX_ITEMS_PER_LISTING = 10;
+const MIN_QTY = 1;
+const MAX_QTY = 30;
+
 /**
  * Cria oferta com rate limit (máx. LISTING_RATE_LIMIT_MAX por LISTING_RATE_LIMIT_WINDOW_MINUTES).
+ * Aceita até 10 itens por oferta; quantidade por item entre 1 e 30.
  */
 export async function createListing(
   side: "HAVE" | "WANT",
-  selectedItemIds: number[]
+  selectedItems: SelectedItem[]
 ): Promise<CreateListingResult> {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { error: "Não autenticado." };
-  if (selectedItemIds.length === 0) return { error: "Selecione pelo menos 1 item." };
+  if (selectedItems.length === 0) return { error: "Selecione pelo menos 1 item." };
+  if (selectedItems.length > MAX_ITEMS_PER_LISTING) return { error: `Máximo de ${MAX_ITEMS_PER_LISTING} itens por oferta.` };
+  for (const row of selectedItems) {
+    if (row.qty < MIN_QTY || row.qty > MAX_QTY) {
+      return { error: `Quantidade deve ser entre ${MIN_QTY} e ${MAX_QTY} por item.` };
+    }
+  }
 
   const windowStart = new Date(Date.now() - LISTING_RATE_LIMIT_WINDOW_MINUTES * 60 * 1000).toISOString();
   const { count, error: countError } = await supabase
@@ -94,7 +108,7 @@ export async function createListing(
     };
   }
 
-  const itemsPayload = selectedItemIds.map((item_id) => ({ item_id, qty: 1 }));
+  const itemsPayload = selectedItems.map(({ item_id, qty }) => ({ item_id, qty }));
 
   const { data: newListing, error: insertListingError } = await supabase
     .from("listings")
@@ -112,10 +126,10 @@ export async function createListing(
   }
 
   const { error: insertItemsError } = await supabase.from("listing_items").insert(
-    selectedItemIds.map((item_id) => ({
+    selectedItems.map(({ item_id, qty }) => ({
       listing_id: newListing.id,
       item_id,
-      qty: 1,
+      qty,
     }))
   );
 

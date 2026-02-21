@@ -118,7 +118,7 @@ export const DropdownMenuContent = React.forwardRef<HTMLDivElement, DropdownMenu
         }}
         role="menu"
         className={cn(
-          "absolute top-full z-50 mt-2 min-w-40 rounded-xl border border-white/10 bg-slate-900/95 py-1 shadow-xl backdrop-blur-xl",
+          "absolute top-full z-50 mt-2 min-w-40 rounded-xl border border-theme bg-theme-card py-1 shadow-xl backdrop-blur-xl",
           align === "end" && "right-0",
           align === "start" && "left-0",
           align === "center" && "left-1/2 -translate-x-1/2",
@@ -146,7 +146,7 @@ export function DropdownMenuItem({ className, children, href, onClick, icon }: D
   const close = () => setOpen(false);
 
   const baseClass =
-    "flex w-full items-center gap-2 px-3 py-2 text-sm text-slate-200 transition-colors hover:bg-white/10 hover:text-white focus:bg-white/10 focus:text-white focus:outline-none";
+    "flex w-full items-center gap-2 px-3 py-2 text-sm text-theme-primary transition-colors hover:bg-theme-elevated focus:bg-theme-elevated focus:outline-none";
 
   if (href) {
     return (

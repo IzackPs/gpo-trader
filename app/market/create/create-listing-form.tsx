@@ -5,7 +5,9 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Check,
   Info,
+  Minus,
   PackagePlus,
+  Plus,
   AlertCircle,
   Search,
   X,
@@ -18,7 +20,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ItemDetailModal } from "@/components/market/item-detail-modal";
 import { ItemIcon } from "@/components/market/item-icon";
+import type { SelectedItem } from "./actions";
 import { getFilteredItems, createListing } from "./actions";
+
+const MAX_ITEMS_PER_LISTING = 10;
+const MAX_QTY = 30;
+const MIN_QTY = 1;
 
 const CATEGORY_LABELS: Record<ItemCategory, string> = {
   FRUIT: "Frutas",
@@ -57,7 +64,7 @@ export function CreateListingForm({
   const [error, setError] = useState<string | null>(null);
 
   const [side, setSide] = useState<"HAVE" | "WANT">("HAVE");
-  const [selectedItems, setSelectedItems] = useState<number[]>([]);
+  const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([]);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<ItemCategory | "ALL">(
     "ALL"
@@ -113,20 +120,38 @@ export function CreateListingForm({
 
   const toggleItem = (id: number) => {
     setError(null);
-    if (selectedItems.includes(id)) {
-      setSelectedItems((prev) => prev.filter((item) => item !== id));
+    const idx = selectedItems.findIndex((s) => s.item_id === id);
+    if (idx >= 0) {
+      setSelectedItems((prev) => prev.filter((s) => s.item_id !== id));
     } else {
-      if (selectedItems.length >= 4) {
-        setError("Máximo de 4 itens por troca.");
+      if (selectedItems.length >= MAX_ITEMS_PER_LISTING) {
+        setError(`Máximo de ${MAX_ITEMS_PER_LISTING} itens por oferta.`);
         return;
       }
-      setSelectedItems((prev) => [...prev, id]);
+      setSelectedItems((prev) => [...prev, { item_id: id, qty: 1 }]);
     }
   };
 
-  const removeSelected = (id: number) => {
+  const removeSelected = (itemId: number) => {
     setError(null);
-    setSelectedItems((prev) => prev.filter((item) => item !== id));
+    setSelectedItems((prev) => prev.filter((s) => s.item_id !== itemId));
+  };
+
+  const updateQty = (itemId: number, delta: number) => {
+    setSelectedItems((prev) =>
+      prev.map((s) =>
+        s.item_id === itemId
+          ? { ...s, qty: Math.min(MAX_QTY, Math.max(MIN_QTY, s.qty + delta)) }
+          : s
+      )
+    );
+  };
+
+  const setQty = (itemId: number, value: number) => {
+    const qty = Math.min(MAX_QTY, Math.max(MIN_QTY, value));
+    setSelectedItems((prev) =>
+      prev.map((s) => (s.item_id === itemId ? { ...s, qty } : s))
+    );
   };
 
   const handleSubmit = async () => {
@@ -167,9 +192,10 @@ export function CreateListingForm({
 
   const selectedItemsDetails = useMemo(
     () =>
-      selectedItems
-        .map((id) => displayItems.find((i) => i.id === id) ?? items.find((i) => i.id === id))
-        .filter(Boolean) as Item[],
+      selectedItems.map((s) => {
+        const item = displayItems.find((i) => i.id === s.item_id) ?? items.find((i) => i.id === s.item_id);
+        return item ? { ...item, qty: s.qty } : null;
+      }).filter(Boolean) as (Item & { qty: number })[],
     [selectedItems, displayItems, items]
   );
 
@@ -312,19 +338,48 @@ export function CreateListingForm({
           </div>
         </div>
 
-        {/* Selecionados (chips) */}
+        {/* Selecionados (chips) com quantidade */}
         {selectedItems.length > 0 && (
-          <div className="glass flex flex-wrap items-center gap-2 rounded-xl border border-white/10 p-3">
-            <span className="text-xs font-medium text-slate-500">
-              Selecionados ({selectedItems.length}/4):
+          <div className="glass flex flex-wrap items-center gap-3 rounded-xl border border-white/10 p-3">
+            <span className="text-xs font-medium text-slate-500 w-full sm:w-auto">
+              Selecionados ({selectedItems.length}/{MAX_ITEMS_PER_LISTING}) — quantidade máx. {MAX_QTY} por item:
             </span>
             {selectedItemsDetails.map((item) => (
-              <span
+              <div
                 key={item.id}
                 className="inline-flex items-center gap-1.5 rounded-lg bg-cyan-500/20 px-2.5 py-1.5 text-sm font-medium text-cyan-200"
               >
                 <ItemIcon iconUrl={item.icon_url} category={item.category} name={item.name} size="sm" className="shrink-0" />
-                {item.name}
+                <span className="min-w-[4ch]">{item.name}</span>
+                <div className="flex items-center gap-0.5 rounded bg-slate-800/80">
+                  <button
+                    type="button"
+                    onClick={() => updateQty(item.id, -1)}
+                    disabled={item.qty <= MIN_QTY}
+                    className="rounded p-1 transition-colors hover:bg-cyan-500/30 disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-cyan-500"
+                    aria-label={`Menos ${item.name}`}
+                  >
+                    <Minus size={12} aria-hidden />
+                  </button>
+                  <input
+                    type="number"
+                    min={MIN_QTY}
+                    max={MAX_QTY}
+                    value={item.qty}
+                    onChange={(e) => setQty(item.id, parseInt(e.target.value, 10) || MIN_QTY)}
+                    className="w-9 rounded bg-transparent py-0.5 text-center text-cyan-200 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                    aria-label={`Quantidade ${item.name}`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => updateQty(item.id, 1)}
+                    disabled={item.qty >= MAX_QTY}
+                    className="rounded p-1 transition-colors hover:bg-cyan-500/30 disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-cyan-500"
+                    aria-label={`Mais ${item.name}`}
+                  >
+                    <Plus size={12} aria-hidden />
+                  </button>
+                </div>
                 <button
                   type="button"
                   onClick={() => removeSelected(item.id)}
@@ -333,7 +388,7 @@ export function CreateListingForm({
                 >
                   <X size={14} aria-hidden />
                 </button>
-              </span>
+              </div>
             ))}
           </div>
         )}
@@ -366,7 +421,7 @@ export function CreateListingForm({
           <>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
             {filteredItems.map((item) => {
-              const isSelected = selectedItems.includes(item.id);
+              const isSelected = selectedItems.some((s) => s.item_id === item.id);
               return (
                 <div
                   key={item.id}
@@ -451,7 +506,7 @@ export function CreateListingForm({
           className="w-full sm:max-w-xs"
           leftIcon={submitting ? undefined : <PackagePlus size={20} />}
           isLoading={submitting}
-          disabled={selectedItems.length === 0 || atLimit || accountTooNew || blockedByStrikes}
+          disabled={selectedItems.length === 0 || atLimit || accountTooNew || blockedByStrikes || selectedItems.some((s) => s.qty < MIN_QTY || s.qty > MAX_QTY)}
           onClick={handleSubmit}
         >
           {submitting ? "Publicando…" : "Publicar oferta"}

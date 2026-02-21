@@ -75,7 +75,7 @@ export default async function CreateListingPage() {
               Nova oferta
             </h1>
             <p className="mt-1 text-sm text-slate-500">
-              Escolha o tipo de oferta e os itens. Máximo 4 itens por oferta.
+              Escolha o tipo de oferta e os itens. Máximo 10 itens por oferta; quantidade de 1 a 30 por item.
             </p>
           </div>
           <div className="flex items-center gap-2 text-sm text-slate-500">

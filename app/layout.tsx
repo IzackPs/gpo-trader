@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import Navbar from "@/components/Navbar";
 import { Footer } from "@/components/layout/footer";
+import { AppProviders } from "@/components/providers/AppProviders";
 import { createClient } from "@/utils/supabase/server";
 import "./globals.css";
 
@@ -15,6 +16,15 @@ export const metadata: Metadata = {
   title: "GPO Trader | Mercado Seguro Grand Piece Online",
   description: "Web of Trust para trocas justas em GPO. Reputação real, sem golpes.",
 };
+
+const themeScript = `
+(function(){
+  var t=localStorage.getItem('gpo-theme');
+  document.documentElement.setAttribute('data-theme',(t==='light'||t==='dark')?t:'dark');
+  var l=localStorage.getItem('gpo-locale');
+  document.documentElement.setAttribute('lang',l==='en'?'en':'pt-BR');
+})();
+`;
 
 export default async function RootLayout({
   children,
@@ -32,13 +42,18 @@ export default async function RootLayout({
       .single()).data;
 
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" data-theme="dark" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body
         className={`${inter.variable} font-sans flex min-h-screen flex-col antialiased`}
       >
-        <Navbar initialUser={user ?? null} initialProfile={initialProfile ?? null} />
-        <div className="flex flex-1 flex-col pt-20">{children}</div>
-        <Footer />
+        <AppProviders>
+          <Navbar initialUser={user ?? null} initialProfile={initialProfile ?? null} />
+          <div className="flex flex-1 flex-col pt-20">{children}</div>
+          <Footer />
+        </AppProviders>
       </body>
     </html>
   );

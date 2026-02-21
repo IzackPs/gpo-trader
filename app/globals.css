@@ -11,7 +11,8 @@
    Deep Ocean / Dark Mode Gaming — Design System
    Imersivo · Premium
    ============================================ */
-:root {
+:root,
+[data-theme="dark"] {
   /* Backgrounds — Azul profundo */
   --bg-page: 2 6 23;           /* slate-950 */
   --bg-page-soft: 15 23 42;   /* slate-900 */
@@ -54,6 +55,24 @@
   --content-gap: 1.5rem;
 }
 
+/* Light theme — fundo claro, texto escuro */
+[data-theme="light"] {
+  --bg-page: 248 250 252;        /* slate-50 */
+  --bg-page-soft: 241 245 249;  /* slate-100 */
+  --bg-elevated: 226 232 240;   /* slate-200 */
+  --bg-card: 255 255 255;
+  --bg-card-hover: 241 245 249;
+
+  --text-primary: 15 23 42;      /* slate-900 */
+  --text-secondary: 51 65 85;   /* slate-700 */
+  --text-muted: 71 85 105;      /* slate-600 */
+  --text-inverse: 248 250 252;
+
+  --border-default: 203 213 225; /* slate-300 */
+  --border-subtle: 226 232 240;
+  --border-glass: 0 0 0 / 0.08;
+}
+
 /* Tipografia — títulos com tracking-tight */
 h1, h2, h3, h4, h5, h6 {
   letter-spacing: -0.025em;
@@ -66,16 +85,20 @@ body {
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background: rgb(var(--bg-page));
+}
+
+[data-theme="dark"] body,
+:root:not([data-theme]) body {
   background:
-    /* Textura sutil: radial escuro no centro */
     radial-gradient(ellipse 120% 80% at 50% 0%, rgb(15 23 42 / 0.9) 0%, transparent 55%),
     radial-gradient(ellipse 80% 50% at 50% 100%, rgb(30 41 59 / 0.4) 0%, transparent 50%),
-    /* Base profunda */
     rgb(var(--bg-page));
 }
 
-/* Noise sutil — textura para não ficar chapado */
-body::before {
+/* Noise sutil — textura (apenas dark) */
+[data-theme="dark"] body::before,
+:root:not([data-theme]) body::before {
   content: "";
   position: fixed;
   inset: 0;
@@ -93,6 +116,12 @@ body::before {
   box-shadow: 0 4px 24px -1px rgb(0 0 0 / 0.2);
 }
 
+[data-theme="light"] .glass {
+  background: rgb(255 255 255 / 0.85);
+  border: 1px solid rgb(0 0 0 / 0.08);
+  box-shadow: 0 4px 24px -1px rgb(0 0 0 / 0.08);
+}
+
 .glass-card {
   background: rgb(15 23 42 / 0.5);
   backdrop-filter: blur(16px);
@@ -102,6 +131,24 @@ body::before {
     0 4px 24px -1px rgb(0 0 0 / 0.25),
     0 0 0 1px rgb(255 255 255 / 0.05) inset;
 }
+
+[data-theme="light"] .glass-card {
+  background: rgb(255 255 255 / 0.9);
+  border: 1px solid rgb(0 0 0 / 0.08);
+  box-shadow: 0 4px 24px -1px rgb(0 0 0 / 0.1);
+}
+
+/* Utilitários que seguem o tema (para componentes que precisam mudar com light/dark) */
+.text-theme-primary { color: rgb(var(--text-primary)); }
+.text-theme-secondary { color: rgb(var(--text-secondary)); }
+.text-theme-muted { color: rgb(var(--text-muted)); }
+.bg-theme-page { background-color: rgb(var(--bg-page)); }
+.bg-theme-elevated { background-color: rgb(var(--bg-elevated)); }
+.bg-theme-card { background-color: rgb(var(--bg-card)); }
+.border-theme { border-color: rgb(var(--border-default)); }
+.border-theme-subtle { border-color: rgb(var(--border-subtle)); }
+.hover\:bg-theme-elevated:hover { background-color: rgb(var(--bg-card-hover)); }
+
 
 /* Focus — acento ciano para acessibilidade */
 :focus-visible {
