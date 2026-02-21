@@ -5,7 +5,7 @@ import { ArrowLeft, Trash2, ShieldCheck, AlertTriangle, MessageCircle } from "lu
 import { useLocale } from "@/contexts/LocaleContext";
 import { t } from "@/lib/i18n";
 import { PageContainer } from "@/components/layout/page-container";
-import { ListingItemsWithDetail } from "@/components/market/listing-items-with-detail";
+import { ListingItemsWithDetail, type ItemDetail } from "@/components/market/listing-items-with-detail";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -27,7 +27,7 @@ type ListingWithProfile = {
 interface ListingDetailContentProps {
   listing: ListingWithProfile;
   itemsArray: { item_id: number; qty?: number }[];
-  itemsDetails: unknown[] | null | undefined;
+  itemsDetails: ItemDetail[] | null | undefined;
   isOwner: boolean;
   isOpen: boolean;
   deleteListing: () => Promise<void>;

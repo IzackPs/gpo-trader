@@ -7,7 +7,7 @@ import { t } from "@/lib/i18n";
 import { ItemDetailModal } from "./item-detail-modal";
 import { ItemIcon } from "./item-icon";
 
-type ItemDetail = {
+export type ItemDetail = {
   id: number;
   name: string;
   category: string;
