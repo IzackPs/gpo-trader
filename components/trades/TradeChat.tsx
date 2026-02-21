@@ -5,6 +5,8 @@ import { useEffect, useRef, useState } from "react";
 import { Send, MessageCircle } from "lucide-react";
 import { sendTradeMessage } from "@/app/trades/actions";
 import type { TradeMessage } from "@/types";
+import { useLocale } from "@/contexts/LocaleContext";
+import { t } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -28,10 +30,12 @@ type MessageWithProfile = TradeMessage & {
 function getSenderDisplayName(
   senderId: string,
   currentUserId: string,
-  participants: TradeChatParticipants
+  participants: TradeChatParticipants,
+  youLabel: string,
+  userLabel: string
 ): string {
-  if (senderId === currentUserId) return "Você";
-  return participants[senderId] ?? "Usuário";
+  if (senderId === currentUserId) return youLabel;
+  return participants[senderId] ?? userLabel;
 }
 
 export default function TradeChat({
@@ -39,6 +43,7 @@ export default function TradeChat({
   currentUserId,
   participants,
 }: TradeChatProps) {
+  const { locale } = useLocale();
   const supabase = createClient();
   const [messages, setMessages] = useState<MessageWithProfile[]>([]);
   const [content, setContent] = useState("");
@@ -101,29 +106,29 @@ export default function TradeChat({
   return (
     <section
       className="glass-card flex h-[320px] flex-col overflow-hidden rounded-xl border border-white/10"
-      aria-label="Chat da troca"
+      aria-label={t(locale, "trade.chatLabel")}
     >
       <div className="flex items-center gap-2 border-b border-slate-700 px-3 py-2.5">
         <MessageCircle size={18} className="text-slate-400" aria-hidden />
-        <h3 className="text-sm font-medium text-slate-300">Chat da troca</h3>
+        <h3 className="text-sm font-medium text-slate-300">{t(locale, "trade.chatLabel")}</h3>
       </div>
 
       <div
         className="flex-1 space-y-2 overflow-y-auto p-3"
         role="log"
         aria-live="polite"
-        aria-label="Mensagens"
+        aria-label={t(locale, "trade.messages")}
       >
         {messages.length === 0 ? (
           <p className="py-4 text-center text-sm text-slate-500">
-            Nenhuma mensagem ainda. Combine o encontro no jogo aqui.
+            {t(locale, "trade.noMessagesYet")}
           </p>
         ) : (
           messages.map((msg) => {
             const isMe = msg.sender_id === currentUserId;
             const senderName =
               msg.profiles?.username ??
-              getSenderDisplayName(msg.sender_id, currentUserId, participants);
+              getSenderDisplayName(msg.sender_id, currentUserId, participants, t(locale, "common.you"), t(locale, "market.user"));
             return (
               <div
                 key={msg.id}
@@ -150,7 +155,7 @@ export default function TradeChat({
       <form
         onSubmit={sendMessage}
         className="flex flex-col gap-2 border-t border-slate-700 p-3"
-        aria-label="Enviar mensagem"
+        aria-label={t(locale, "trade.sendMessage")}
       >
         {sendError && (
           <p className="text-xs text-amber-400" role="alert">
@@ -162,9 +167,9 @@ export default function TradeChat({
             type="text"
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder="Mensagem…"
+            placeholder={t(locale, "trade.messagePlaceholder")}
             maxLength={500}
-            aria-label="Texto da mensagem"
+            aria-label={t(locale, "trade.messageLabel")}
             className="flex-1"
           />
           <Button
@@ -173,7 +178,7 @@ export default function TradeChat({
             size="md"
             disabled={loading || !content.trim()}
             className="shrink-0 px-3"
-            aria-label="Enviar"
+            aria-label={t(locale, "trade.send")}
           >
             <Send size={18} aria-hidden />
           </Button>

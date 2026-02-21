@@ -29,21 +29,21 @@ export default async function AdminLayout({
             className="flex items-center gap-2 text-sm text-slate-400 transition-colors hover:text-slate-50 rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-500"
           >
             <Package size={18} aria-hidden />
-            Preços dos itens
+            Item prices
           </Link>
           <Link
             href="/admin/disputes"
             className="flex items-center gap-2 text-sm text-slate-400 transition-colors hover:text-slate-50 rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-500"
           >
             <Scale size={18} aria-hidden />
-            Disputas
+            Disputes
           </Link>
         </nav>
         <Link
           href="/"
           className="text-sm text-slate-500 hover:text-slate-50"
         >
-          Voltar ao site
+          Back to site
         </Link>
       </div>
       {children}

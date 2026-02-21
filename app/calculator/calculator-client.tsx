@@ -109,7 +109,7 @@ export function TradeCalculatorClient({ items }: TradeCalculatorClientProps) {
                   type="button"
                   onClick={() => removeRow(side, index)}
                   className="rounded p-1.5 text-slate-400 transition-colors hover:bg-red-500/20 hover:text-red-400 focus-visible:outline-2 focus-visible:outline-cyan-500"
-                  aria-label="Remover linha"
+                  aria-label={t(locale, "common.removeRow")}
                 >
                   <Trash2 size={16} aria-hidden />
                 </button>

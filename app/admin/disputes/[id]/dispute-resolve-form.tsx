@@ -5,14 +5,17 @@ import { Save, Loader2 } from "lucide-react";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useLocale } from "@/contexts/LocaleContext";
+import { t } from "@/lib/i18n";
 import { resolveDispute } from "./actions";
 
-const STATUS_OPTIONS = [
-  { value: "OPEN", label: "Aberta" },
-  { value: "UNDER_REVIEW", label: "Em análise" },
-  { value: "RESOLVED", label: "Resolvida" },
-  { value: "CLOSED", label: "Encerrada" },
-] as const;
+const STATUS_KEYS = ["OPEN", "UNDER_REVIEW", "RESOLVED", "CLOSED"] as const;
+const STATUS_I18N: Record<(typeof STATUS_KEYS)[number], string> = {
+  OPEN: "admin.disputeStatusOpen",
+  UNDER_REVIEW: "admin.disputeStatusUnderReview",
+  RESOLVED: "admin.disputeStatusResolved",
+  CLOSED: "admin.disputeStatusClosed",
+};
 
 interface DisputeResolveFormProps {
   disputeId: string;
@@ -25,6 +28,7 @@ export function DisputeResolveForm({
   currentStatus,
   currentAdminNotes,
 }: DisputeResolveFormProps) {
+  const { locale } = useLocale();
   const [state, formAction, isPending] = useActionState(
     (prev: { error: string | null } | null, formData: FormData) =>
       resolveDispute(disputeId, prev, formData),
@@ -51,9 +55,9 @@ export function DisputeResolveForm({
               defaultValue={currentStatus}
               className="w-full rounded-lg border border-white/10 bg-slate-900/60 px-4 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 focus:ring-offset-slate-950"
             >
-              {STATUS_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
+              {STATUS_KEYS.map((key) => (
+                <option key={key} value={key}>
+                  {t(locale, STATUS_I18N[key])}
                 </option>
               ))}
             </select>
@@ -61,7 +65,7 @@ export function DisputeResolveForm({
 
           <div>
             <label htmlFor="admin_notes" className="block text-sm font-medium text-slate-300 mb-1">
-              Notas (visíveis apenas para admin)
+              {t(locale, "admin.adminNotesLabel")}
             </label>
             <textarea
               id="admin_notes"
@@ -69,7 +73,7 @@ export function DisputeResolveForm({
               rows={4}
               defaultValue={currentAdminNotes}
               className="w-full rounded-lg border border-white/10 bg-slate-900/60 px-4 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 focus:ring-offset-slate-950 resize-y"
-              placeholder="Registo interno da resolução..."
+              placeholder={t(locale, "admin.adminNotesPlaceholder")}
             />
           </div>
 
@@ -80,7 +84,7 @@ export function DisputeResolveForm({
             disabled={isPending}
             leftIcon={isPending ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
           >
-            {isPending ? "A guardar…" : "Guardar"}
+            {isPending ? t(locale, "common.loading") : t(locale, "common.save")}
           </Button>
         </form>
       </CardContent>

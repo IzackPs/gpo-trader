@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { Bell, X, ArrowRightLeft } from "lucide-react";
 import Link from "next/link";
+import { useLocale } from "@/contexts/LocaleContext";
+import { t } from "@/lib/i18n";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface Match {
@@ -21,6 +23,7 @@ interface Match {
 }
 
 export function MatchNotifications() {
+  const { locale } = useLocale();
   const supabase = createClient();
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
@@ -42,7 +45,7 @@ export function MatchNotifications() {
       });
 
       if (error) {
-        console.error("Erro ao buscar matches:", error);
+        console.error("Fetch matches error:", error);
         setLoading(false);
         return;
       }
@@ -100,7 +103,7 @@ export function MatchNotifications() {
                       setDismissed((prev) => new Set([...prev, match.match_id]))
                     }
                     className="shrink-0 rounded p-1 text-slate-500 transition-colors hover:bg-slate-800 hover:text-slate-300"
-                    aria-label="Fechar notificação"
+                    aria-label={t(locale, "common.closeNotification")}
                   >
                     <X size={16} aria-hidden />
                   </button>
@@ -109,7 +112,7 @@ export function MatchNotifications() {
                   href={`/market/${match.listing_have_id}`}
                   className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-cyan-500/20 px-3 py-2 text-xs font-medium text-cyan-300 transition-colors hover:bg-cyan-500/30"
                 >
-                  Ver oferta
+                  {t(locale, "nav.viewOffer")}
                   <ArrowRightLeft size={14} aria-hidden />
                 </Link>
               </div>

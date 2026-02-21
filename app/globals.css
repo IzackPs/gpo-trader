@@ -55,24 +55,6 @@
   --content-gap: 1.5rem;
 }
 
-/* Light theme — fundo claro, texto escuro */
-[data-theme="light"] {
-  --bg-page: 248 250 252;        /* slate-50 */
-  --bg-page-soft: 241 245 249;  /* slate-100 */
-  --bg-elevated: 226 232 240;   /* slate-200 */
-  --bg-card: 255 255 255;
-  --bg-card-hover: 241 245 249;
-
-  --text-primary: 15 23 42;      /* slate-900 */
-  --text-secondary: 51 65 85;   /* slate-700 */
-  --text-muted: 71 85 105;      /* slate-600 */
-  --text-inverse: 248 250 252;
-
-  --border-default: 203 213 225; /* slate-300 */
-  --border-subtle: 226 232 240;
-  --border-glass: 0 0 0 / 0.08;
-}
-
 /* Tipografia — títulos com tracking-tight */
 h1, h2, h3, h4, h5, h6 {
   letter-spacing: -0.025em;
@@ -116,12 +98,6 @@ body {
   box-shadow: 0 4px 24px -1px rgb(0 0 0 / 0.2);
 }
 
-[data-theme="light"] .glass {
-  background: rgb(255 255 255 / 0.85);
-  border: 1px solid rgb(0 0 0 / 0.08);
-  box-shadow: 0 4px 24px -1px rgb(0 0 0 / 0.08);
-}
-
 .glass-card {
   background: rgb(15 23 42 / 0.5);
   backdrop-filter: blur(16px);
@@ -130,12 +106,6 @@ body {
   box-shadow:
     0 4px 24px -1px rgb(0 0 0 / 0.25),
     0 0 0 1px rgb(255 255 255 / 0.05) inset;
-}
-
-[data-theme="light"] .glass-card {
-  background: rgb(255 255 255 / 0.9);
-  border: 1px solid rgb(0 0 0 / 0.08);
-  box-shadow: 0 4px 24px -1px rgb(0 0 0 / 0.1);
 }
 
 /* Utilitários que seguem o tema (para componentes que precisam mudar com light/dark) */
@@ -148,121 +118,6 @@ body {
 .border-theme { border-color: rgb(var(--border-default)); }
 .border-theme-subtle { border-color: rgb(var(--border-subtle)); }
 .hover\:bg-theme-elevated:hover { background-color: rgb(var(--bg-card-hover)); }
-
-/* ============================================
-   Light theme: overrides para texto e fundos
-   Garante legibilidade (texto escuro em fundo claro)
-   ============================================ */
-[data-theme="light"] .text-slate-50,
-[data-theme="light"] .text-slate-100,
-[data-theme="light"] .text-white {
-  color: rgb(15 23 42);
-}
-[data-theme="light"] .text-slate-200,
-[data-theme="light"] .text-slate-300 {
-  color: rgb(51 65 85);
-}
-[data-theme="light"] .text-slate-400 {
-  color: rgb(71 85 105);
-}
-[data-theme="light"] .text-slate-500 {
-  color: rgb(100 116 139);
-}
-[data-theme="light"] .text-slate-600 {
-  color: rgb(71 85 105);
-}
-[data-theme="light"] .text-cyan-300,
-[data-theme="light"] .text-cyan-400 {
-  color: rgb(6 182 212);
-}
-[data-theme="light"] .text-emerald-400 {
-  color: rgb(16 185 129);
-}
-[data-theme="light"] .text-amber-300,
-[data-theme="light"] .text-amber-400 {
-  color: rgb(245 158 11);
-}
-[data-theme="light"] .text-red-400 {
-  color: rgb(239 68 68);
-}
-[data-theme="light"] .text-yellow-200,
-[data-theme="light"] .text-yellow-500 {
-  color: rgb(161 98 7);
-}
-[data-theme="light"] .text-violet-400 {
-  color: rgb(139 92 246);
-}
-/* Backgrounds — light theme */
-[data-theme="light"] .bg-slate-950,
-[data-theme="light"] .bg-slate-900\/50,
-[data-theme="light"] .bg-slate-900\/30 {
-  background-color: rgb(255 255 255);
-}
-[data-theme="light"] .bg-slate-900 {
-  background-color: rgb(241 245 249);
-}
-[data-theme="light"] .bg-slate-800 {
-  background-color: rgb(226 232 240);
-}
-[data-theme="light"] .bg-slate-800\/80,
-[data-theme="light"] .bg-slate-800\/60,
-[data-theme="light"] .bg-slate-800\/50 {
-  background-color: rgb(226 232 240);
-}
-[data-theme="light"] .bg-slate-700 {
-  background-color: rgb(203 213 225);
-}
-[data-theme="light"] .bg-slate-700\/80 {
-  background-color: rgb(203 213 225);
-}
-[data-theme="light"] .hover\:bg-slate-700\/80:hover,
-[data-theme="light"] .hover\:bg-slate-800\/50:hover,
-[data-theme="light"] .hover\:bg-slate-800\/30:hover {
-  background-color: rgb(226 232 240);
-}
-[data-theme="light"] .hover\:bg-white\/5:hover,
-[data-theme="light"] .hover\:bg-white\/10:hover {
-  background-color: rgb(0 0 0 / 0.06);
-}
-[data-theme="light"] .focus\:bg-white\/10:focus {
-  background-color: rgb(0 0 0 / 0.06);
-}
-/* Borders — light theme */
-[data-theme="light"] .border-white\/10,
-[data-theme="light"] .border-white\/20 {
-  border-color: rgb(0 0 0 / 0.08);
-}
-[data-theme="light"] .border-slate-700,
-[data-theme="light"] .border-slate-800 {
-  border-color: rgb(203 213 225);
-}
-[data-theme="light"] .border-slate-600 {
-  border-color: rgb(226 232 240);
-}
-[data-theme="light"] .decoration-slate-600 {
-  text-decoration-color: rgb(148 163 184);
-}
-[data-theme="light"] .hover\:text-slate-50:hover,
-[data-theme="light"] .hover\:text-slate-100:hover,
-[data-theme="light"] .hover\:text-slate-300:hover {
-  color: rgb(15 23 42);
-}
-[data-theme="light"] .hover\:border-slate-600:hover {
-  border-color: rgb(203 213 225);
-}
-[data-theme="light"] .shadow-cyan-500\/10 {
-  box-shadow: 0 4px 24px -1px rgb(6 182 212 / 0.15);
-}
-[data-theme="light"] .text-yellow-200\/80 {
-  color: rgb(120 53 15);
-}
-[data-theme="light"] .focus-visible\:ring-offset-slate-950:focus-visible {
-  --tw-ring-offset-color: rgb(248 250 252);
-}
-[data-theme="light"] input::placeholder,
-[data-theme="light"] textarea::placeholder {
-  color: rgb(100 116 139);
-}
 
 /* Focus — acento ciano para acessibilidade */
 :focus-visible {

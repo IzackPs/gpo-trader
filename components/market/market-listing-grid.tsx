@@ -19,7 +19,7 @@ export function MarketListingGrid({ listings }: { listings: Listing[] }) {
       <Card
         as="section"
         className="col-span-full flex flex-col items-center justify-center border-dashed py-16 text-center"
-        aria-label={locale === "en" ? "Empty state" : "Estado vazio"}
+        aria-label={t(locale, "common.emptyState")}
       >
         <CardContent className="flex flex-col items-center gap-4 p-0">
           <div className="size-16 flex items-center justify-center rounded-full bg-slate-800">

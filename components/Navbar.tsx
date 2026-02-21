@@ -2,10 +2,9 @@
 
 import { createClient } from "@/utils/supabase/client";
 import type { User } from "@supabase/supabase-js";
-import { LogIn, LayoutDashboard, PlusCircle, LogOut, Shield, ShieldCheck, Package, Scale, Calculator, Sun, Moon, Languages } from "lucide-react";
+import { LogIn, LayoutDashboard, PlusCircle, LogOut, Shield, ShieldCheck, Package, Scale, Calculator } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useTheme } from "@/contexts/ThemeContext";
 import { useLocale } from "@/contexts/LocaleContext";
 import { t } from "@/lib/i18n";
 import { Avatar } from "@/components/ui/avatar";
@@ -33,7 +32,6 @@ export default function Navbar({ initialUser = null, initialProfile = null }: Na
   const [profile, setProfile] = useState<NavbarProfile | null>(initialProfile ?? null);
   const loading = false;
   const supabase = createClient();
-  const { theme, toggleTheme } = useTheme();
   const { locale, setLocale } = useLocale();
   const isEn = locale === "en";
 
@@ -71,10 +69,10 @@ export default function Navbar({ initialUser = null, initialProfile = null }: Na
   const rep = profile?.reputation_score ?? 0;
 
   return (
-    <header className="pointer-events-none relative z-50 px-4 pt-4" aria-label="Barra de navegação">
+    <header className="pointer-events-none relative z-50 px-4 pt-4" aria-label="Navigation bar">
       <nav
         className="glass pointer-events-auto mx-auto flex max-w-6xl items-center justify-between gap-4 rounded-full border border-white/10 px-4 py-2.5 sm:px-6"
-        aria-label="Navegação principal"
+        aria-label="Main navigation"
       >
         <Link
           href="/"
@@ -89,27 +87,15 @@ export default function Navbar({ initialUser = null, initialProfile = null }: Na
             <NavbarSkeleton />
           ) : (
             <>
-              <div className="flex shrink-0 items-center gap-1 rounded-full border border-theme-subtle bg-theme-elevated/80 p-1">
-                <button
-                  type="button"
-                  onClick={toggleTheme}
-                  className="rounded-full p-1.5 text-theme-secondary transition-colors hover:bg-theme-card hover:text-theme-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-500"
-                  aria-label={theme === "dark" ? t(locale, "nav.light") : t(locale, "nav.dark")}
-                  title={theme === "dark" ? t(locale, "nav.light") : t(locale, "nav.dark")}
-                >
-                  {theme === "dark" ? <Sun size={16} aria-hidden /> : <Moon size={16} aria-hidden />}
-                </button>
-                <span className="text-theme-muted text-xs">|</span>
-                <button
-                  type="button"
-                  onClick={() => setLocale(isEn ? "pt" : "en")}
-                  className="rounded-full px-2 py-1 text-xs font-medium text-theme-secondary transition-colors hover:bg-theme-card hover:text-theme-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-500"
-                  aria-label={t(locale, "nav.language")}
-                  title={t(locale, "nav.language")}
-                >
-                  {isEn ? "PT" : "EN"}
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={() => setLocale(isEn ? "pt" : "en")}
+                className="flex shrink-0 items-center gap-1 rounded-full border border-theme-subtle bg-theme-elevated/80 px-2 py-1.5 text-xs font-medium text-theme-secondary transition-colors hover:bg-theme-card hover:text-theme-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-500"
+                aria-label={t(locale, "nav.language")}
+                title={t(locale, "nav.language")}
+              >
+                {isEn ? "PT" : "EN"}
+              </button>
               <Link
                 href="/calculator"
                 className="flex shrink-0 items-center gap-2 rounded-full border border-theme-subtle bg-theme-elevated/80 px-3 py-2 text-sm font-medium text-theme-secondary transition-colors hover:bg-theme-card hover:text-theme-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-500"
@@ -124,7 +110,7 @@ export default function Navbar({ initialUser = null, initialProfile = null }: Na
                 <DropdownMenu>
                   <DropdownMenuTrigger
                     className="flex shrink-0 items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm font-medium text-amber-400 transition-colors hover:bg-amber-500/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-500"
-                    aria-label="Menu Admin"
+                    aria-label={t(locale, "nav.admin")}
                   >
                     <ShieldCheck size={18} aria-hidden />
                     <span className="hidden sm:inline">{t(locale, "nav.admin")}</span>
@@ -141,7 +127,7 @@ export default function Navbar({ initialUser = null, initialProfile = null }: Na
               )}
               <span
                 className="hidden shrink-0 items-center gap-1.5 rounded-full border border-white/10 bg-slate-800/60 px-2.5 py-1 text-xs font-semibold text-cyan-300 sm:flex"
-                title="Reputação"
+                title={t(locale, "nav.rep")}
               >
                 <Shield size={12} aria-hidden />
                 <span className="tabular-nums">{Math.round(rep)}</span>
@@ -150,7 +136,7 @@ export default function Navbar({ initialUser = null, initialProfile = null }: Na
               <DropdownMenu>
                 <DropdownMenuTrigger
                   className="flex shrink-0 items-center gap-2 rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-500"
-                  aria-label="Abrir menu do usuário"
+                  aria-label={t(locale, "common.openUserMenu")}
                 >
                   <Avatar
                     src={user.user_metadata?.avatar_url}

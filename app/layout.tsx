@@ -13,16 +13,15 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "GPO Trader | Mercado Seguro Grand Piece Online",
-  description: "Web of Trust para trocas justas em GPO. Reputação real, sem golpes.",
+  title: "GPO Trader | Secure Grand Piece Online Market",
+  description: "Web of Trust for fair trades in GPO. Real reputation, no scams.",
 };
 
 const themeScript = `
 (function(){
-  var t=localStorage.getItem('gpo-theme');
-  document.documentElement.setAttribute('data-theme',(t==='light'||t==='dark')?t:'dark');
+  document.documentElement.setAttribute('data-theme','dark');
   var l=localStorage.getItem('gpo-locale');
-  document.documentElement.setAttribute('lang',l==='en'?'en':'pt-BR');
+  document.documentElement.setAttribute('lang',l==='pt'?'pt-BR':'en');
 })();
 `;
 
@@ -42,7 +41,7 @@ export default async function RootLayout({
       .single()).data;
 
   return (
-    <html lang="pt-BR" data-theme="dark" suppressHydrationWarning>
+    <html lang="en" data-theme="dark" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>

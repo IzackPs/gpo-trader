@@ -41,12 +41,12 @@ export default async function CreateListingPage() {
 
   // Tratamento de erros
   if (itemsRes.error) {
-    throw new Error(`Erro ao buscar itens: ${itemsRes.error.message}`);
+    throw new Error(`Failed to fetch items: ${itemsRes.error.message}`);
   }
 
   if (profileRes.error || !profileRes.data) {
     throw new Error(
-      `Erro ao buscar perfil: ${profileRes.error?.message || "Perfil não encontrado"}`
+      `Failed to fetch profile: ${profileRes.error?.message || "Profile not found"}`
     );
   }
 

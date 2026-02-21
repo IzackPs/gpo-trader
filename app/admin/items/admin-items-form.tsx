@@ -4,6 +4,8 @@ import { useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { Save, Loader2, Power } from "lucide-react";
 import type { Item } from "@/types";
+import { useLocale } from "@/contexts/LocaleContext";
+import { t } from "@/lib/i18n";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,6 +16,7 @@ interface AdminItemsFormProps {
 }
 
 export function AdminItemsForm({ items }: AdminItemsFormProps) {
+  const { locale } = useLocale();
   const supabase = createClient();
   const [savingId, setSavingId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -173,10 +176,10 @@ export function AdminItemsForm({ items }: AdminItemsFormProps) {
                             ? "bg-emerald-500/20 text-emerald-400"
                             : "bg-slate-700 text-slate-500"
                         }`}
-                        title={values[item.id]?.is_active !== false ? "Desativar item" : "Ativar item"}
+                        title={values[item.id]?.is_active !== false ? t(locale, "admin.deactivateItem") : t(locale, "admin.activateItem")}
                       >
                         <Power size={12} aria-hidden />
-                        {values[item.id]?.is_active !== false ? "Sim" : "Não"}
+                        {values[item.id]?.is_active !== false ? t(locale, "common.yes") : t(locale, "common.no")}
                       </button>
                     </td>
                     <td className="py-3">

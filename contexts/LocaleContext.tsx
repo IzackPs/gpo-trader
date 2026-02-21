@@ -14,9 +14,9 @@ interface LocaleContextValue {
 const LocaleContext = createContext<LocaleContextValue | null>(null);
 
 function getStoredLocale(): Locale {
-  if (typeof window === "undefined") return "pt";
+  if (typeof window === "undefined") return "en";
   const stored = localStorage.getItem(STORAGE_KEY) as Locale | null;
-  return stored === "en" || stored === "pt" ? stored : "pt";
+  return stored === "en" || stored === "pt" ? stored : "en";
 }
 
 function applyLocale(locale: Locale) {
@@ -25,7 +25,7 @@ function applyLocale(locale: Locale) {
 }
 
 export function LocaleProvider({ children }: { children: React.ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>("pt");
+  const [locale, setLocaleState] = useState<Locale>("en");
 
   useEffect(() => {
     const stored = getStoredLocale();

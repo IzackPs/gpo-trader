@@ -4,8 +4,8 @@ import { CalculatorPageClient } from "./calculator-page-client";
 import type { Item } from "@/types";
 
 export const metadata = {
-  title: "Calculadora de trade | GPO Trader",
-  description: "Calcule se uma troca é boa ou ruim com base nos valores dos itens em Legendary Chests.",
+  title: "Trade calculator | GPO Trader",
+  description: "Calculate whether a trade is good or bad based on item values in Legendary Chests.",
 };
 
 export default async function CalculatorPage() {

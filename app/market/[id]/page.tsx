@@ -64,7 +64,7 @@ export default async function ListingDetailPage({ params }: Props) {
     });
 
     if (error) {
-      console.error("Erro ao aceitar oferta:", error.message);
+      console.error("Accept offer error:", error.message);
       return;
     }
     redirect(`/trades/${transactionId}`);

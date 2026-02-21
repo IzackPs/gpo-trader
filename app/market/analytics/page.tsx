@@ -9,8 +9,8 @@ import { Card, CardContent } from "@/components/ui/card";
 export const revalidate = 60;
 
 export const metadata = {
-  title: "Bolsa / Economia | GPO Trader",
-  description: "Preço médio ponderado dos itens na última semana com base em trocas confirmadas.",
+  title: "Market / Economy | GPO Trader",
+  description: "Weighted average price of items in the last week based on confirmed trades.",
 };
 
 type MarketPriceRow = {
@@ -41,16 +41,16 @@ export default async function MarketAnalyticsPage() {
               href="/market"
               className="inline-flex items-center gap-2 text-sm text-slate-400 transition-colors hover:text-slate-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 rounded mb-4"
             >
-              <ArrowLeft size={18} aria-hidden /> Voltar ao mercado
+              <ArrowLeft size={18} aria-hidden /> Back to market
             </Link>
             <SectionHeader
-              title="Bolsa / Economia"
-              description="Preço médio ponderado (WAP) dos itens na última semana, com base em trocas confirmadas. Ordenado por volume."
+              title="Market / Economy"
+              description="Weighted average price (WAP) of items in the last week, based on confirmed trades. Sorted by volume."
             />
           </div>
         </div>
 
-        <Card as="section" aria-label="Preços da última semana">
+        <Card as="section" aria-label="Last week prices">
           <CardContent className="p-0">
             {prices.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -58,10 +58,10 @@ export default async function MarketAnalyticsPage() {
                   <TrendingUp className="text-slate-500" size={32} aria-hidden />
                 </div>
                 <p className="text-slate-400">
-                  Ainda não há dados de preços na última semana. As trocas confirmadas alimentam esta tabela.
+                  No price data for the last week yet. Confirmed trades feed this table.
                 </p>
                 <Link href="/market" className="mt-4 text-sm text-blue-400 hover:underline">
-                  Ver ofertas no mercado
+                  View offers on market
                 </Link>
               </div>
             ) : (

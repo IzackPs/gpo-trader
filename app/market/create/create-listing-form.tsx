@@ -303,7 +303,7 @@ export function CreateListingForm({
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-9"
-                aria-label="Buscar itens por nome"
+                aria-label={t(locale, "common.searchItems")}
               />
             </div>
             <div className="flex flex-wrap gap-1.5">
@@ -357,7 +357,7 @@ export function CreateListingForm({
                     onClick={() => updateQty(item.id, -1)}
                     disabled={item.qty <= MIN_QTY}
                     className="rounded p-1 transition-colors hover:bg-cyan-500/30 disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-cyan-500"
-                    aria-label={`Menos ${item.name}`}
+                    aria-label={`${t(locale, "common.less")} ${item.name}`}
                   >
                     <Minus size={12} aria-hidden />
                   </button>
@@ -368,14 +368,14 @@ export function CreateListingForm({
                     value={item.qty}
                     onChange={(e) => setQty(item.id, parseInt(e.target.value, 10) || MIN_QTY)}
                     className="w-9 rounded bg-transparent py-0.5 text-center text-cyan-200 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                    aria-label={`Quantidade ${item.name}`}
+                    aria-label={`${t(locale, "common.quantity")} ${item.name}`}
                   />
                   <button
                     type="button"
                     onClick={() => updateQty(item.id, 1)}
                     disabled={item.qty >= MAX_QTY}
                     className="rounded p-1 transition-colors hover:bg-cyan-500/30 disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-cyan-500"
-                    aria-label={`Mais ${item.name}`}
+                    aria-label={`${t(locale, "common.more")} ${item.name}`}
                   >
                     <Plus size={12} aria-hidden />
                   </button>
@@ -384,7 +384,7 @@ export function CreateListingForm({
                   type="button"
                   onClick={() => removeSelected(item.id)}
                   className="rounded p-0.5 transition-colors hover:bg-cyan-500/30 focus-visible:outline-2 focus-visible:outline-cyan-500"
-                  aria-label={`Remover ${item.name}`}
+                  aria-label={`${t(locale, "common.remove")} ${item.name}`}
                 >
                   <X size={14} aria-hidden />
                 </button>
@@ -440,7 +440,7 @@ export function CreateListingForm({
                       : "border-slate-700/80 bg-slate-900/50 hover:border-slate-600 hover:bg-slate-800/50"
                   }`}
                   aria-pressed={isSelected}
-                  aria-label={`${item.name}${isSelected ? ", selecionado" : ""}`}
+                  aria-label={`${item.name}${isSelected ? `, ${t(locale, "common.selected")}` : ""}`}
                 >
                   {isSelected && (
                     <span className="absolute right-2 top-2 flex size-6 items-center justify-center rounded-full bg-cyan-500">

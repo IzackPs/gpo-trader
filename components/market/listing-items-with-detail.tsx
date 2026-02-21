@@ -91,8 +91,8 @@ export function ListingItemsWithDetail({
                       setDetailOpen(true);
                     }}
                     className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-white/10 hover:text-cyan-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-500"
-                    aria-label={`${locale === "en" ? "View details for" : "Ver detalhes de"} ${item?.name ?? "item"}`}
-                    title={locale === "en" ? "View item details" : "Ver detalhes do item"}
+                    aria-label={`${t(locale, "common.viewDetailsFor")} ${item?.name ?? "item"}`}
+                    title={t(locale, "common.viewItemDetails")}
                   >
                     <Info size={18} aria-hidden />
                   </button>

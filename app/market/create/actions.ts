@@ -85,12 +85,12 @@ export async function createListing(
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: "Não autenticado." };
-  if (selectedItems.length === 0) return { error: "Selecione pelo menos 1 item." };
-  if (selectedItems.length > MAX_ITEMS_PER_LISTING) return { error: `Máximo de ${MAX_ITEMS_PER_LISTING} itens por oferta.` };
+  if (!user) return { error: "Not authenticated." };
+  if (selectedItems.length === 0) return { error: "Select at least 1 item." };
+  if (selectedItems.length > MAX_ITEMS_PER_LISTING) return { error: `Maximum ${MAX_ITEMS_PER_LISTING} items per offer.` };
   for (const row of selectedItems) {
     if (row.qty < MIN_QTY || row.qty > MAX_QTY) {
-      return { error: `Quantidade deve ser entre ${MIN_QTY} e ${MAX_QTY} por item.` };
+      return { error: `Quantity must be between ${MIN_QTY} and ${MAX_QTY} per item.` };
     }
   }
 
@@ -103,8 +103,7 @@ export async function createListing(
 
   if (countError || (count ?? 0) >= LISTING_RATE_LIMIT_MAX) {
     return {
-      error:
-        "Muitas ofertas criadas nos últimos minutos. Aguarde antes de criar outra.",
+      error: "Too many offers created recently. Wait before creating another.",
     };
   }
 

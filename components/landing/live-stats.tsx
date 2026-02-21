@@ -56,7 +56,7 @@ export function LiveStats() {
   return (
     <section
       className="border-y border-white/10 bg-slate-950/60 py-6"
-      aria-label={locale === "en" ? "Live stats" : "Estatísticas ao vivo"}
+      aria-label={t(locale, "common.liveStats")}
     >
       <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-center gap-x-12 gap-y-4 px-4 sm:px-6">
         <div className="flex items-baseline gap-2">

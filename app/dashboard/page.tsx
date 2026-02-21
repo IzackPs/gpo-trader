@@ -40,11 +40,11 @@ const NEXT_TIER_REP: Record<RankTier, number | null> = {
 };
 
 const TIER_DESCRIPTIONS: Record<RankTier, string> = {
-  DRIFTER: "Máx. 1 oferta ativa. Prove que é real.",
-  CIVILIAN: "Máx. 3 ofertas. Suba de nível com trocas.",
-  MERCHANT: "Ofertas ilimitadas. Histórico disponível.",
-  BROKER: "Perfil verificado. Acesso a leilões.",
-  YONKO: "Formador de mercado. Moderador de disputas.",
+  DRIFTER: "Max 1 active offer. Prove you're real.",
+  CIVILIAN: "Max 3 offers. Level up with trades.",
+  MERCHANT: "Unlimited offers. History available.",
+  BROKER: "Verified profile. Access to auctions.",
+  YONKO: "Market maker. Dispute moderator.",
 };
 
 export default async function DashboardPage() {
@@ -148,7 +148,7 @@ export default async function DashboardPage() {
                 aria-valuenow={progress}
                 aria-valuemin={0}
                 aria-valuemax={100}
-                aria-label="Progresso para próximo tier"
+                aria-label="Progress to next tier"
               >
                 <div
                   className={`h-full bg-linear-to-r ${TIER_COLORS[tier]} transition-all duration-500`}
@@ -157,14 +157,14 @@ export default async function DashboardPage() {
               </div>
               {nextRep != null && rep < nextRep && (
                 <p className="text-xs text-slate-500">
-                  Próximo tier em{" "}
+                  Next tier in{" "}
                   <span className="text-slate-300">{Math.ceil(nextRep - rep)}</span> XP
                 </p>
               )}
             </div>
             <p className="flex items-center gap-2 text-xs text-slate-500">
               <ShieldCheck size={14} aria-hidden />
-              Conta Discord: {profile.account_age_days} dias · Strikes: {profile.strikes}
+              Discord account: {profile.account_age_days} days · Strikes: {profile.strikes}
             </p>
           </CardContent>
         </Card>
@@ -185,7 +185,7 @@ export default async function DashboardPage() {
             className="rounded-xl border border-slate-800 bg-slate-900/50 p-4 transition-colors hover:border-blue-500/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500"
           >
             <Package className="text-blue-400 mb-2" size={24} aria-hidden />
-            <p className="font-semibold text-slate-50">Ofertas ativas</p>
+            <p className="font-semibold text-slate-50">Active offers</p>
             <p className="text-2xl font-mono text-slate-50">{openListings ?? 0}</p>
           </Link>
           <Link
@@ -193,25 +193,25 @@ export default async function DashboardPage() {
             className="rounded-xl border border-slate-800 bg-slate-900/50 p-4 transition-colors hover:border-emerald-500/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500"
           >
             <ArrowRightLeft className="text-emerald-400 mb-2" size={24} aria-hidden />
-            <p className="font-semibold text-slate-50">Mercado</p>
-            <p className="text-sm text-slate-400">Ver ofertas</p>
+            <p className="font-semibold text-slate-50">Market</p>
+            <p className="text-sm text-slate-400">View offers</p>
           </Link>
         </div>
 
-        {/* Trocas pendentes */}
+        {/* Pending trades */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
               <Clock size={18} aria-hidden />
-              Trocas pendentes
+              Pending trades
             </CardTitle>
             <p className="text-sm text-slate-500">
-              Confirme ou aguarde a confirmação da outra parte.
+              Confirm or wait for the other party to confirm.
             </p>
           </CardHeader>
           <CardContent>
             {pending.length === 0 ? (
-              <p className="text-sm text-slate-500">Nenhuma troca pendente.</p>
+              <p className="text-sm text-slate-500">No pending trades.</p>
             ) : (
               <ul className="space-y-2" role="list">
                 {pending.map((tx) => {
@@ -227,10 +227,10 @@ export default async function DashboardPage() {
                           className="size-10 shrink-0"
                         />
                         <span className="min-w-0 flex-1 truncate text-sm font-medium text-slate-200">
-                          com {other?.username ?? "Usuário"}
+                          with {other?.username ?? "User"}
                         </span>
                         <span className="text-xs text-slate-500">
-                          Ver sala →
+                          View room →
                         </span>
                       </Link>
                     </li>
@@ -241,20 +241,20 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Histórico concluído */}
+        {/* Completed history */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
               <CheckCircle2 size={18} aria-hidden />
-              Histórico concluído
+              Completed history
             </CardTitle>
             <p className="text-sm text-slate-500">
-              Trocas que você e a outra parte confirmaram.
+              Trades you and the other party have confirmed.
             </p>
           </CardHeader>
           <CardContent>
             {completed.length === 0 ? (
-              <p className="text-sm text-slate-500">Nenhuma troca concluída ainda.</p>
+              <p className="text-sm text-slate-500">No completed trades yet.</p>
             ) : (
               <ul className="space-y-2" role="list">
                 {completed.map((tx) => {
@@ -270,9 +270,9 @@ export default async function DashboardPage() {
                           className="size-10 shrink-0"
                         />
                         <span className="min-w-0 flex-1 truncate text-sm text-slate-300">
-                          com {other?.username ?? "Usuário"}
+                          with {other?.username ?? "User"}
                         </span>
-                        <span className="text-xs text-emerald-500">Concluída</span>
+                        <span className="text-xs text-emerald-500">Completed</span>
                       </Link>
                     </li>
                   );
@@ -282,12 +282,12 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Últimos eventos de reputação */}
+        {/* Recent reputation events */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
               <TrendingUp size={18} aria-hidden />
-              Últimos eventos de reputação
+              Recent reputation events
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -312,7 +312,7 @@ export default async function DashboardPage() {
               </ul>
             ) : (
               <p className="text-sm text-slate-500">
-                Complete trocas para ganhar XP e aparecer aqui.
+                Complete trades to earn XP and appear here.
               </p>
             )}
           </CardContent>
