@@ -94,12 +94,14 @@ export async function createListing(
     };
   }
 
+  const itemsPayload = selectedItemIds.map((item_id) => ({ item_id, qty: 1 }));
+
   const { data: newListing, error: insertListingError } = await supabase
     .from("listings")
     .insert({
       user_id: user.id,
       side,
-      items: [],
+      items: itemsPayload,
       status: "OPEN",
     })
     .select("id")
